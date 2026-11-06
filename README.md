@@ -8,6 +8,36 @@ QuietDrive is a lightweight EV motor noise detection, severity grading, and nois
 - frontend/: Vite + React + TypeScript dashboard
 - firmware/: PlatformIO ESP32-S3 firmware project (Arduino framework) for the ECU
 - docs/protocol.md: exact serial/WiFi protocol that the firmware must follow
+- bridge/: laptop mic + phone accelerometer sensor bridge (stand-in for the ESP32), see bridge/README.md
+
+## Demo day
+
+Three terminals, all from the repo root (Python is `py -3.12`).
+
+```powershell
+# once
+py -3.12 -m pip install -r backend/requirements.txt -r bridge/requirements.txt
+cd frontend; npm install; cd ..
+
+# 1) backend
+cd backend; py -3.12 -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+# 2) dashboard -> http://localhost:5173
+cd frontend; npm run dev
+
+# 3a) no hardware: synthetic motor (keys 0-3 = fault, +/- = level)
+py -3.12 bridge/fake_dataset.py
+py -3.12 bridge/train.py --data bridge/data_fake
+py -3.12 bridge/live.py --fake
+
+# 3b) real rig: laptop mic + phone (phyphox remote access)
+py -3.12 bridge/record.py --phone 192.168.43.20:8080 --check
+py -3.12 bridge/train.py
+py -3.12 bridge/live.py --phone 192.168.43.20:8080 --mic N
+```
+
+The ESP32 path is unchanged: it connects to the same `/ws/device/QD-01` endpoint
+(or serial with `SOURCE=serial`). While any device streams for QD-01 the simulator pauses QD-01.
 
 ## Requirements
 

@@ -6,6 +6,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from app.analytics.health import explain_fault_bucket, level_for_score, score_from_inference
 from app.ingest.event_bus import bus
+from app.ingest.websocket_device import websocket_device_endpoint
 
 router = APIRouter()
 
@@ -24,9 +25,16 @@ async def live_stream(websocket: WebSocket, vid: str):
     bus.subscribe(key=f"live:{vid}", callback=forward)
     try:
         while True:
-            await asyncio.sleep(0.2)
-    except WebSocketDisconnect:
+            await websocket.receive_text()     # returns/raises when the browser disconnects
+    except (WebSocketDisconnect, Exception):
         pass
+    finally:
+        bus.unsubscribe(key=f"live:{vid}", callback=forward)
+
+
+@router.websocket("/ws/device/{vid}")
+async def device_stream(websocket: WebSocket, vid: str):
+    await websocket_device_endpoint(websocket, vid)
 
 
 @router.websocket("/ws/fleet")

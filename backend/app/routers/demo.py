@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from app.config import settings
 from app.ingest.simulator import simulator
 from app.schemas import FaultInjection
 
@@ -20,4 +21,4 @@ async def reset_simulation():
 
 @router.get("/health")
 def backend_health():
-    return {"status": "ok", "source": "sim"}
+    return {"status": "ok", "source": settings.source}

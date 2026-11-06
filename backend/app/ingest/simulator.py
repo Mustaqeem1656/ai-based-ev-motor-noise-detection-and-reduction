@@ -50,6 +50,8 @@ class Simulator:
         while self._running:
             t += 1
             for vid in VEHICLES:
+                if bus.device_active(vid):      # a real device owns this vehicle right now
+                    continue
                 state = self.state[vid]
                 fault = state["fault"]
                 severity = state["severity"]

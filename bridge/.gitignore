@@ -1,0 +1,6 @@
+__pycache__/
+data/
+data_fake/
+models/
+*.wav
+*.png

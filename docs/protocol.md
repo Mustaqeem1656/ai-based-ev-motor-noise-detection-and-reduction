@@ -117,6 +117,14 @@ The ECU acknowledges valid commands with an ack line:
 
 If parsing fails, the ECU may respond with `{"t":"ack","ok":false,"reason":"malformed json"}`.
 
+## Optional values and other devices
+
+Any device may stream on `/ws/device/{vehicle_id}`. The laptop bridge (`bridge/live.py`,
+laptop mic + phone accelerometer) uses exactly these messages; values it cannot measure
+(`current_a`, `temp_c`, `spl_err_db`, `pwm_hz`, `i_mean`, `i_ripple`, `temp_c`, `conf.current`)
+are sent as `null`. Consumers must treat `null` as "not available", not as zero.
+While a device streams for a vehicle, the backend simulator pauses that vehicle.
+
 ## Parsing rules
 
 The backend parser must be tolerant and safe:

@@ -6,6 +6,7 @@ from typing import Any, Optional
 import serial
 
 from app.ingest.event_bus import bus
+from app.ingest.processing import process_frame
 
 logger = logging.getLogger("quietdrive.serial")
 
@@ -34,7 +35,9 @@ class SerialReader:
                         continue
                     parsed = self._parse_line(line.decode("utf-8", errors="ignore").strip())
                     if parsed is not None:
-                        await bus.publish(parsed)
+                        if parsed.get("vid"):
+                            bus.mark_device(parsed["vid"])
+                        await bus.publish(process_frame(parsed))
             except Exception as exc:  # pragma: no cover - tolerant runtime handling
                 logger.warning("Serial reconnecting after error: %s", exc)
                 await asyncio.sleep(2)
