@@ -15,6 +15,8 @@ All commands are run from the **repo root**.
 | train.py | train fault / severity / per-sensor models -> bridge/models/ |
 | live.py | stream live data + predictions to the backend |
 | fake_dataset.py | synthetic sessions in bridge/data_fake (test without a motor) |
+| clean_voice.py | live cabin-mic whine removal (adaptive notches), RAW/CLEANED playback |
+| anc_recorded.py | fault-aware FxLMS ANC on a recorded session (also run from the dashboard) |
 | plot_prefilter.py | spectrum before vs after prefiltering (PNG for slides) |
 
 ## 0. Install (once)
@@ -48,3 +50,28 @@ Windows: Settings > System > Sound > your mic > turn OFF "Audio enhancements" / 
 - Audio: zero-phase Butterworth high-pass 50 Hz + low-pass 7 kHz, order 4.
 - Vibration: resampled to uniform time, gravity/DC removed, band-pass 3 Hz to 0.45 x sample rate.
 Recordings are saved raw, so the filter can be changed and the models retrained.
+
+## 5. Live cabin-mic noise removal (clean_voice.py)
+What an EV does for phone calls / voice assistants: the motor whine and its 2nd/3rd
+harmonics are tracked every 50 ms and removed with narrow adaptive IIR notches (Q 40,
+a few Hz wide), so speech passes. Notches near a protected fault frequency (from the
+backend's live `inf`, or `--protect-hz`) are switched off: a fault stays audible.
+
+    py -3.12 bridge/clean_voice.py --selftest        # offline: reduction + speech kept
+    py -3.12 bridge/live.py --phone ADDR --no-spec   # diagnosis (leaves the waterfall to the cleaner)
+    py -3.12 bridge/clean_voice.py --mic N           # PLUG IN HEADPHONES first
+    keys: c CLEANED, r RAW, o playback on/off, s save last 10 s, q quit
+
+Saved clips: bridge/recordings/clean_<time>/raw.wav and clean.wav (for the slides).
+Without hardware: `py -3.12 bridge/clean_voice.py --fake --play`.
+
+## 6. Fault-aware ANC on recordings (anc_recorded.py)
+Narrowband FxLMS on a recorded session: the whine tracked from the audio is the reference,
+the speaker path is SIMULATED (learned by LMS first), whine x1 and x2 are cancelled and the
+1x shaft tone is never a target. Say it in the pitch: real motor noise, simulated speaker.
+
+    py -3.12 bridge/anc_recorded.py bridge/data/<session>
+
+Or in the dashboard: **Noise reduction** tab > pick a session > Run ANC (~10 s). It shows the
+dB per tone, before/after audio and the plot. Typical result: whine about 25-30 dB lower,
+protected 1x within about 1 dB (the step size is chosen so the 1x tone does not leak back).

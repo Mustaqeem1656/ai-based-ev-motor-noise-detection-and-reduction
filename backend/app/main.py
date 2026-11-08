@@ -8,7 +8,7 @@ from app.config import settings
 from app.database import Base, engine
 from app.ingest.serial_reader import SerialReader
 from app.ingest.simulator import simulator
-from app.routers import demo, recordings, vehicles, websocket
+from app.routers import anc, demo, recordings, vehicles, websocket
 
 Base.metadata.create_all(bind=engine)
 
@@ -25,6 +25,7 @@ app.include_router(vehicles.router)
 app.include_router(demo.router)
 app.include_router(recordings.router)
 app.include_router(websocket.router)
+app.include_router(anc.router)
 
 
 @app.on_event("startup")

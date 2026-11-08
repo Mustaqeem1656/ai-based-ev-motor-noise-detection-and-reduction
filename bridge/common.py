@@ -16,7 +16,21 @@ AUDIO_FS = 16000          # same as the firmware
 FFT_N = 1024              # 15.6 Hz per bin
 WIN_S = 1.0               # analysis window
 HOP_S = 0.5               # a feature row every 0.5 s
-WHINE_ORDER = 3           # whine = 3 x shaft speed (3-slot brushed motor); change if your motor differs
+DEFAULT_WHINE_ORDER = 3   # fallback before calibration: whine = 3 x shaft speed (3-slot brushed motor)
+CALIB_PATH = __import__("os").path.join(__import__("os").path.dirname(__import__("os").path.abspath(__file__)),
+                                        "models", "calibration.json")
+SHAFT_SEARCH_HZ = (20.0, 100.0)   # where the 1x shaft peak is searched in the phone vibration
+
+
+def load_whine_order():
+    """WHINE_ORDER measured by calibrate_whine_order() (train.py), else the default."""
+    try:
+        return int(json.load(open(CALIB_PATH))["whine_order"])
+    except Exception:
+        return DEFAULT_WHINE_ORDER
+
+
+WHINE_ORDER = load_whine_order()  # whine_hz / WHINE_ORDER = shaft_hz (protected band, rpm display)
 G = 9.81
 LABELS = ["normal", "imbalance", "loose_mount", "bearing"]
 
@@ -129,6 +143,66 @@ def vib_features(y, fs, shaft_hz):
         return float(np.sqrt(power[max(i - 1, 0):i + 2].max()))
     vrms = float(np.sqrt(np.mean(np.sum(y ** 2, axis=1))))
     return bands, amp_at(shaft_hz), amp_at(2 * shaft_hz), vrms
+
+
+# ---------------- whine-order calibration ----------------
+def _vib_peak_hz(t, xyz, f_lo, f_hi):
+    """Strongest phone-vibration peak between f_lo and f_hi (zero-padded FFT, ~0.03 Hz steps)."""
+    y, fs = prefilter_vib(t, xyz)
+    if y is None:
+        return None
+    n = len(y); w = np.hanning(n)
+    power = sum(np.abs(np.fft.rfft(y[:, a] * w, 8 * n)) ** 2 for a in range(3))
+    freqs = np.fft.rfftfreq(8 * n, 1 / fs)
+    m = (freqs >= f_lo) & (freqs <= min(f_hi, 0.45 * fs))
+    return float(freqs[m][np.argmax(power[m])]) if m.any() else None
+
+
+def calibrate_whine_order(data_dir, label="imbalance", level=3, win_s=4.0, save=True):
+    """Measure how many whine cycles there are per shaft turn from the given fault recordings
+    (imbalance level 3 shakes the phone strongly at exactly 1x shaft speed).
+    Per 4 s window: whine = audio peak, shaft = strongest vibration peak 20-100 Hz.
+    Sets WHINE_ORDER = round(median whine / median shaft), saves models/calibration.json.
+    Returns the result dict, or None if there are no suitable recordings."""
+    global WHINE_ORDER
+    import glob, os
+    import soundfile as sf
+    whines, shafts, per_session = [], [], {}
+    for f in sorted(glob.glob(os.path.join(data_dir, "*"))):
+        try:
+            meta = json.load(open(os.path.join(f, "meta.json")))
+        except Exception:
+            continue
+        if meta.get("label") != label or int(meta.get("level", -1)) != level:
+            continue
+        acc_path = os.path.join(f, "accel.csv")
+        if not os.path.exists(acc_path):
+            continue
+        x, fs = sf.read(os.path.join(f, "audio.wav"))
+        x = x[:, 0] if x.ndim > 1 else x
+        acc = np.loadtxt(acc_path, delimiter=",", skiprows=1).reshape(-1, 4)
+        ratios = []
+        for t0 in np.arange(1.0, len(x) / fs - win_s, win_s / 2):
+            freqs, p = audio_power_spectrum(prefilter_audio(x[int(t0 * fs):int((t0 + win_s) * fs)]))
+            m = (acc[:, 0] >= t0) & (acc[:, 0] < t0 + win_s)
+            sh = _vib_peak_hz(acc[m, 0], acc[m, 1:4], *SHAFT_SEARCH_HZ)
+            if sh:
+                wh = whine_frequency(freqs, p)
+                whines.append(wh); shafts.append(sh); ratios.append(wh / sh)
+        if ratios:
+            per_session[os.path.basename(f)] = round(float(np.median(ratios)), 2)
+    if not shafts:
+        return None
+    whine_hz, shaft_hz = float(np.median(whines)), float(np.median(shafts))
+    ratio = whine_hz / shaft_hz
+    res = dict(whine_order=int(round(ratio)), ratio=round(ratio, 2), whine_hz=round(whine_hz, 1),
+               shaft_hz=round(shaft_hz, 2), rpm=round(shaft_hz * 60), per_session_ratio=per_session,
+               source=f"{label} level {level}")
+    WHINE_ORDER = res["whine_order"]
+    if save:
+        os.makedirs(os.path.dirname(CALIB_PATH), exist_ok=True)
+        json.dump(res, open(CALIB_PATH, "w"), indent=2)
+    return res
 
 
 # ---------------- one feature row ----------------

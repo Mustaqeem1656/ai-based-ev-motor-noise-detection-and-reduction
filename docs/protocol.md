@@ -66,6 +66,9 @@ Field definitions:
 - mic: "ref" or "err"
 - fmax: max spectral frequency in Hz
 - bins: list of 128 floating-point dB values
+- reduction_db (optional, mic "err" only): dB removed in the notched whine bands (raw vs cleaned)
+- whine_hz (optional, mic "err" only): tracked motor whine frequency
+- notch_hz (optional, mic "err" only): notch frequencies currently active
 
 ## ECU -> backend feature vector
 
@@ -106,6 +109,25 @@ Field definitions:
 - conf: dict of sensor confidences, each 0-1
 - severity_raw: normalized severity 0-1
 - protected_hz: list of frequencies that ANC is not canceling
+
+Optional owner-advice fields (added for the dashboard; old devices may omit them, and the
+backend then computes them from fault, severity_raw, conf and the vehicle's healthy loudness):
+
+```json
+{"points":56,"health":44,"tier":"MODERATE","action":"service_soon","advice":"Get it checked at a service centre within a week. Quick check: ...","reason":"Shaking once per motor turn (1x shaft speed), typical of an imbalance; 4 dB louder than when healthy.","sensors_agree":true,"fix_db":3.2}
+```
+
+- points: problem points 0-100, higher = worse. Severity level (0-3) scaled to 75, plus 1.5 per dB
+  louder than the healthy baseline (max 15); x0.7 unless audio and vib confidence are both >= 0.5;
+  any confirmed fault scores at least 21
+- health: 100 - points
+- tier: "HEALTHY" (0-20), "MILD" (21-45), "MODERATE" (46-75), "SEVERE" (76-100)
+- action: "ok", "diy", "service_soon" or "service_now" (matches the tier)
+- advice: one-line instruction for the owner, with a fault-specific tip for MILD / MODERATE
+- reason: why, in plain words, including how many dB louder than when healthy
+- sensors_agree: true when sound and vibration confidence are both >= 0.5
+- fix_vib_pct (optional): expected % less vibration once fixed (vs healthy vibration); sent when >= 5 %. The dashboard shows it when fix_db is missing or below 0.5 dB
+- fix_db (optional): expected dB reduction once the fault is fixed, learned from recordings
 
 ## Serial command acknowledgment
 

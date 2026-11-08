@@ -1,0 +1,12 @@
+{
+  "whine_order": 22,
+  "ratio": 21.59,
+  "whine_hz": 1262.3,
+  "shaft_hz": 58.46,
+  "rpm": 3507,
+  "per_session_ratio": {
+    "imbalance_L3_S1_211723": 21.85,
+    "imbalance_L3_S1_225444": 21.0
+  },
+  "source": "imbalance level 3"
+}

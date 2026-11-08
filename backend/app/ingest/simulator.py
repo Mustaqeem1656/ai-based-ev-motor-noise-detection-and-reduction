@@ -4,6 +4,7 @@ import time
 from typing import Dict, List
 
 from app.ingest.event_bus import bus
+from app.ingest.processing import process_frame
 
 VEHICLES = ["QD-01", "QD-02", "QD-03", "QD-04"]
 FAULTS = ["normal", "imbalance", "loose_mount", "bearing"]
@@ -102,7 +103,7 @@ class Simulator:
                     "vib_cancel_on": vib_cancel_active,
                     "vib_cancel_effort": round(vib_cancel_effort, 3),
                 }
-                await bus.publish(demo_telemetry)
+                await bus.publish(process_frame(demo_telemetry))
 
                 if t % 2 == 0:
                     bins = [max(-30, 40 + 18 * math.sin(i / 10.0) + math.sin(i / 7.0) + (severity * 12.0)) for i in range(128)]
@@ -136,7 +137,7 @@ class Simulator:
                     conf = {"audio": 0.3 + severity * 0.6, "vib": 0.4 + severity * 0.5, "current": 0.2 + severity * 0.5}
                     if fault == "normal":
                         conf = {"audio": 0.18, "vib": 0.16, "current": 0.14}
-                    await bus.publish({
+                    await bus.publish(process_frame({     # adds points/health/tier/advice
                         "t": "inf",
                         "ts": int(time.time() * 1000),
                         "vid": vid,
@@ -144,7 +145,7 @@ class Simulator:
                         "conf": conf,
                         "severity_raw": round(min(1.0, severity + 0.15), 3),
                         "protected_hz": [max(1, int((rpm_wave / 60.0) * 2)), max(1, int((rpm_wave / 60.0) * 3))],
-                    })
+                    }))
 
             await asyncio.sleep(0.1)
 

@@ -34,6 +34,14 @@ py -3.12 bridge/live.py --fake
 py -3.12 bridge/record.py --phone 192.168.43.20:8080 --check
 py -3.12 bridge/train.py
 py -3.12 bridge/live.py --phone 192.168.43.20:8080 --mic N
+
+# 4) live noise removal demo (headphones on). Restart step 3 with --no-spec first,
+#    so the raw waterfall shows only the cleaner's frames.
+py -3.12 bridge/clean_voice.py --mic N          # keys: c cleaned, r raw, o playback, s save 10 s
+#    no hardware: py -3.12 bridge/live.py --fake --no-spec  +  py -3.12 bridge/clean_voice.py --fake --play
+
+# 5) ANC on recordings: dashboard > "Noise reduction" tab > pick a session > Run ANC
+#    (real recorded motor noise, simulated speaker path). CLI: py -3.12 bridge/anc_recorded.py bridge/data/<session>
 ```
 
 The ESP32 path is unchanged: it connects to the same `/ws/device/QD-01` endpoint

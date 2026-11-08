@@ -7,6 +7,7 @@ device WebSocket, so the backend and dashboard treat it like any other device.
   py -3.12 bridge/live.py --phone ADDR --mic 2 --backend ws://localhost:8000/ws/device/QD-01
   py -3.12 bridge/live.py --dry-run --phone ADDR   # print instead of sending
   py -3.12 bridge/live.py --fake                   # synthetic motor, no mic/phone needed
+  py -3.12 bridge/live.py --phone ADDR --esp32 COM5 # + on-board ANC status / speed tracking
       keys in --fake mode: 0 normal, 1 imbalance, 2 loose_mount, 3 bearing, +/- level, q quit
 """
 import argparse
@@ -14,14 +15,20 @@ import collections
 import os
 import threading
 import time
+import warnings
+
+warnings.filterwarnings("ignore", module="sklearn")
+warnings.filterwarnings("ignore", message=".*valid feature names.*")
 
 import numpy as np
 
-from common import (AUDIO_FS, AUDIO_IDX, HOP_S, LABELS, VIB_IDX, WIN_S, FakeMotor, Phyphox,
+import common  # noqa: E402
+from common import (AUDIO_FS, AUDIO_IDX, FEATURE_NAMES, HOP_S, LABELS, VIB_IDX, WIN_S, FakeMotor, Phyphox,
                     audio_power_spectrum, display_spectrum, dumps, feature_row, now_ms,
                     prefilter_audio, to_16k)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+from advice import assess  # noqa: E402  (same code as the backend)
 
 
 class Sender:
@@ -56,13 +63,51 @@ def next_due(last, period, now):
     return last + period if now - last < 2 * period else now
 
 
-def predict(model, row, history):
-    """Fault (majority of last 3), per-sensor confidence and severity 0-1."""
+STOPPED_RPM = 1500       # below this estimated rpm the motor counts as stopped
+STOPPED_VIB_G = 0.01     # ...or below this phone vibration RMS (only checked when the phone is streaming)
+
+
+def healthy_db(model, rpm):
+    """Healthy loudness at this speed, from the normal sessions (nearest/interpolated rpm)."""
+    ref = sorted(model.get("normal_ref") or []) if model else []
+    if not ref:
+        return None
+    r, d = np.array(ref).T
+    return float(np.interp(rpm, r, d))
+
+
+def expected_fix_db(model, fault, level):
+    table = (model or {}).get("fix_db", {}).get(fault)
+    if not table:
+        return None
+    lv = min(table, key=lambda k: abs(k - level))     # nearest recorded level
+    return table[lv]
+
+
+def expected_fix_vib_pct(model, vib_rms):
+    """% less vibration once fixed: how far above the healthy (normal sessions) vibration we are."""
+    base = (model or {}).get("baseline")
+    if base is None or not vib_rms:
+        return None
+    healthy = float(base[FEATURE_NAMES.index("vib_rms")])
+    return 100.0 * (vib_rms - healthy) / vib_rms
+
+
+def predict(model, row, history, has_vib=True):
+    """Fault (majority of last 3), per-sensor confidence and severity 0-1.
+    If the sound-only and vibration-only models disagree, the vibration one wins:
+    the phone on the motor is not affected by crowd / venue noise."""
     if model is None:
         return "normal", dict(audio=None, vib=None, current=None), 0.0, 0.0
     p = model["clf"].predict_proba(row[None])[0]
     labels = list(model["clf"].classes_)
-    history.append(labels[int(np.argmax(p))])
+    vote = labels[int(np.argmax(p))]
+    if has_vib:
+        a_pred = model["clf_audio"].predict(row[AUDIO_IDX][None])[0]
+        v_pred = model["clf_vib"].predict(row[VIB_IDX][None])[0]
+        if a_pred != v_pred:
+            vote = v_pred
+    history.append(vote)
     fault = max(set(history), key=list(history).count)
 
     def sensor_conf(m, idx):
@@ -152,19 +197,34 @@ def main():
     ap.add_argument("--vid", default="QD-01")
     ap.add_argument("--model", default=os.path.join(HERE, "models", "quietdrive_model.joblib"))
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--no-spec", action="store_true", help="leave the waterfall to clean_voice.py")
     ap.add_argument("--fake", action="store_true", help="synthetic motor, no mic or phone")
     ap.add_argument("--fake-fault", default="normal", choices=LABELS)
     ap.add_argument("--fake-level", type=int, default=2)
     ap.add_argument("--fake-rpm", type=float, default=2400)
+    ap.add_argument("--esp32", metavar="PORT", help="ESP32 ANC serial port, e.g. COM5")
     a = ap.parse_args()
+
+    link = None
+    if a.esp32:
+        try:
+            from esp32_link import ESP32Link
+            link = ESP32Link(a.esp32)
+            print(f"ESP32 ANC link open on {a.esp32}")
+        except Exception as e:
+            print(f"WARNING: ESP32 on {a.esp32} not available ({e}); continuing without it.")
+    anc = lambda: dict(link.state) if link else {}
 
     model = None
     if os.path.exists(a.model):
         import joblib
         model = joblib.load(a.model)
+        if model.get("whine_order"):
+            common.WHINE_ORDER = int(model["whine_order"])    # same order the model was trained with
         print(f"Model loaded: {model['labels']}  (accuracy {model['accuracy']*100:.1f}%, {model['evaluation']})")
     else:
         print(f"No model at {a.model} - streaming sensor data only (run train.py first).")
+    print(f"WHINE_ORDER = {common.WHINE_ORDER}  (rpm = whine / {common.WHINE_ORDER} x 60; protected band = 1x shaft)")
 
     sender = Sender(a.backend, a.dry_run)
     lock = threading.Lock()
@@ -175,6 +235,7 @@ def main():
     time.sleep(1.2)
     last = dict(tel=0.0, spec=0.0, feat=0.0)
     history = collections.deque(maxlen=3)
+    levels = collections.deque(maxlen=3)
     state = dict(rpm=None, spl=None, vib_rms=None, xyz=[None] * 3)
     while True:
         now = time.time()
@@ -192,25 +253,43 @@ def main():
                 state.update(rpm=ex["rpm"], vib_rms=ex["vib_rms"] if has_vib else None,
                              spl=ex["rms_db"] + 100,  # dBFS + 100: uncalibrated, comparable over time
                              xyz=list(acc[:, 1:4].std(axis=0)) if has_vib else [None] * 3)
+                if link:
+                    link.update_rpm(ex["rpm"])
                 sender.send(dict(t="feat", ts=now_ms(), vid=a.vid, rpm=ex["rpm"], audio_bands=ex["audio_bands"],
                                  vib_bands=ex["vib_bands"], vib_1x=ex["vib_1x"], vib_2x=ex["vib_2x"],
                                  i_mean=None, i_ripple=None, temp_c=None))
-                fault, conf, sev, level = predict(model, row, history)
-                shaft = ex["shaft_hz"]
-                protected = [] if fault == "normal" else [shaft] + ([2 * shaft] if fault == "loose_mount" else [])
-                sender.send(dict(t="inf", ts=now_ms(), vid=a.vid, fault=fault, conf=conf,
-                                 severity_raw=sev, protected_hz=protected))
-                ca = "-" if conf["audio"] is None else f"{conf['audio']:.2f}"
-                cv = "-" if conf["vib"] is None else f"{conf['vib']:.2f}"
-                print(f"  rpm~{ex['rpm']:6.0f}  whine {ex['whine']:6.1f} Hz  vib {ex['vib_rms']:.3f} g  "
-                      f"phone {len(acc):4d} pts -> {fault:11s} lvl {level:.1f}  conf a{ca} v{cv}   ", end="\r")
+                # motor-stopped gate: no shaft rotation -> skip the model entirely
+                if ex["rpm"] < STOPPED_RPM or (has_vib and ex["vib_rms"] < STOPPED_VIB_G):
+                    history.clear(); levels.clear()      # don't carry old votes into the next run
+                    sender.send(dict(t="inf", ts=now_ms(), vid=a.vid, fault="stopped",
+                                     conf=dict(audio=None, vib=None, current=None), severity_raw=0.0,
+                                     protected_hz=[], points=0, health=100, tier="HEALTHY", action="none",
+                                     advice="Motor is not running.", reason="No shaft rotation detected.", **anc()))
+                    vs = f"{ex['vib_rms']:.3f} g" if has_vib else "-"
+                    print(f"  rpm~{ex['rpm']:5.0f} vib {vs} -> stopped (model skipped)" + " " * 40, end="\r")
+                else:
+                    fault, conf, sev, level = predict(model, row, history, has_vib)
+                    levels.append(level)
+                    level = float(np.median(levels)) if fault != "normal" else 0.0
+                    base = healthy_db(model, ex["rpm"])
+                    db_over = max(0.0, ex["rms_db"] - base) if base is not None else 0.0
+                    adv = assess(fault, level, conf, db_over, expected_fix_db(model, fault, level),
+                                 expected_fix_vib_pct(model, ex["vib_rms"]) if has_vib else None)
+                    shaft = ex["shaft_hz"]
+                    protected = [] if fault == "normal" else [shaft] + ([2 * shaft] if fault == "loose_mount" else [])
+                    sender.send(dict(t="inf", ts=now_ms(), vid=a.vid, fault=fault, conf=conf,
+                                     severity_raw=level / 3, protected_hz=protected, **adv, **anc()))
+                    ca = "-" if conf["audio"] is None else f"{conf['audio']:.2f}"
+                    cv = "-" if conf["vib"] is None else f"{conf['vib']:.2f}"
+                    print(f"  rpm~{ex['rpm']:5.0f} vib {ex['vib_rms']:.3f} g "
+                          f"-> {fault:11s} lvl {level:.1f} a{ca} v{cv} | {adv['tier']:8s} {adv['points']:3d} pts  +{db_over:.1f} dB   ", end="\r")
         if now - last["tel"] >= 0.1 and state["rpm"] is not None:    # tel at 10 Hz
             last["tel"] = next_due(last["tel"], 0.1, now)
             sender.send(dict(t="tel", ts=now_ms(), vid=a.vid, rpm=state["rpm"], current_a=None, temp_c=None,
                              vib_rms_g=state["vib_rms"], vib_xyz=state["xyz"], spl_ref_db=state["spl"],
                              spl_err_db=None, pwm_hz=None, pwm_mode="fixed", anc_on=False,
                              vib_cancel_on=False, vib_cancel_effort=0))
-        if now - last["spec"] >= 0.2 and state["rpm"] is not None:   # spec at 5 Hz, last 0.25 s
+        if not a.no_spec and now - last["spec"] >= 0.2 and state["rpm"] is not None:   # spec at 5 Hz, last 0.25 s
             last["spec"] = next_due(last["spec"], 0.2, now)
             with lock:
                 xs = np.array(audio_buf)[-int(0.25 * mic_fs):]

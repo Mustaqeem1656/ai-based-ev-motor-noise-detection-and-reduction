@@ -38,6 +38,16 @@ class InferenceIn(BaseModel):
     conf: Dict[str, float]
     severity_raw: float
     protected_hz: List[float] = []
+    # on-board ANC status (bridge/live.py --esp32), passed through unchanged
+    anc_connected: Optional[bool] = None
+    anc_on: Optional[bool] = None
+    anc_freq: Optional[float] = None
+    anc_level_db: Optional[float] = None
+    anc_reduction_db: Optional[float] = None
+    anc_out: Optional[float] = None
+    anc_at_limit: Optional[bool] = None
+    anc_tracking: Optional[bool] = None
+    anc_msg: Optional[str] = None
 
 
 class VehicleCommand(BaseModel):
