@@ -1,0 +1,599 @@
+{
+  "schemaVersion": 1,
+  "algorithm": "louvain",
+  "totalFiles": 31,
+  "totalBatches": 6,
+  "exportsByPath": {
+    "app/__init__.py": [],
+    "app/analytics/advice.py": [
+      "_ok",
+      "compute_points",
+      "tier_for_points",
+      "assess"
+    ],
+    "app/analytics/health.py": [
+      "normalize_score",
+      "level_for_score",
+      "health_message_for_score",
+      "score_from_inference",
+      "explain_fault_bucket",
+      "time_to_severe"
+    ],
+    "app/analytics/train.py": [
+      "train_placeholder"
+    ],
+    "app/config.py": [
+      "Settings",
+      "get_settings"
+    ],
+    "app/database.py": [
+      "get_db"
+    ],
+    "app/ingest/event_bus.py": [
+      "EventBus"
+    ],
+    "app/ingest/processing.py": [
+      "process_frame",
+      "advise"
+    ],
+    "app/ingest/serial_reader.py": [
+      "SerialReader"
+    ],
+    "app/ingest/simulator.py": [
+      "Simulator"
+    ],
+    "app/ingest/websocket_device.py": [
+      "parse_frame",
+      "websocket_device_endpoint"
+    ],
+    "app/main.py": [
+      "startup_event",
+      "shutdown_event",
+      "root"
+    ],
+    "app/models.py": [
+      "Vehicle",
+      "TelemetryRecord",
+      "InferenceRecord",
+      "AlertRecord",
+      "ServiceEvent",
+      "RecordingSession"
+    ],
+    "app/routers/anc.py": [
+      "_session_dir",
+      "_read_json",
+      "list_sessions",
+      "run_anc",
+      "get_file"
+    ],
+    "app/routers/demo.py": [
+      "inject_fault",
+      "reset_simulation",
+      "backend_health"
+    ],
+    "app/routers/recordings.py": [
+      "_feature_csv_path",
+      "start_recording",
+      "stop_recording",
+      "list_recordings",
+      "append_feature_row"
+    ],
+    "app/routers/vehicles.py": [
+      "get_vehicles",
+      "get_vehicle_detail",
+      "send_vehicle_command",
+      "set_vehicle_baseline"
+    ],
+    "app/routers/websocket.py": [
+      "live_stream",
+      "device_stream",
+      "fleet_stream"
+    ],
+    "app/schemas.py": [
+      "TelemetryIn",
+      "SpectrumIn",
+      "InferenceIn",
+      "VehicleCommand",
+      "FaultInjection",
+      "RecordingCreate",
+      "BaselineRequest"
+    ],
+    "app/storage/crud.py": [
+      "get_vehicle",
+      "list_vehicles",
+      "create_vehicle_if_missing",
+      "add_telemetry",
+      "add_inference",
+      "add_alert",
+      "list_alerts"
+    ],
+    "data/recordings/.gitkeep": [],
+    "ml/__init__.py": [],
+    "models/.gitkeep": [],
+    "tests/test_advice.py": [
+      "test_healthy_is_zero_points",
+      "test_points_formula",
+      "test_tiers_and_advice",
+      "test_backend_enriches_esp32_inf_but_keeps_bridge_fields"
+    ],
+    "tests/test_anc.py": [
+      "test_sessions_listing_works",
+      "test_rejects_bad_paths_and_files"
+    ],
+    "tests/test_health.py": [
+      "test_score_from_inference_is_clamped",
+      "test_level_mapping_is_correct",
+      "test_health_message_mapping",
+      "test_time_to_severe_returns_estimate_for_declining_trend"
+    ],
+    "tests/test_parser.py": [
+      "test_parser_accepts_valid_json_line",
+      "test_parser_ignores_malformed_lines"
+    ]
+  },
+  "batches": [
+    {
+      "batchIndex": 1,
+      "files": [
+        {
+          "path": "app/database.py",
+          "language": "python",
+          "sizeLines": 16,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/models.py",
+          "language": "python",
+          "sizeLines": 82,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/routers/recordings.py",
+          "language": "python",
+          "sizeLines": 75,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/routers/vehicles.py",
+          "language": "python",
+          "sizeLines": 43,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/schemas.py",
+          "language": "python",
+          "sizeLines": 75,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/storage/crud.py",
+          "language": "python",
+          "sizeLines": 68,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "app/database.py": [
+          "app/config.py"
+        ],
+        "app/models.py": [
+          "app/database.py"
+        ],
+        "app/routers/recordings.py": [
+          "app/schemas.py"
+        ],
+        "app/routers/vehicles.py": [
+          "app/database.py",
+          "app/models.py",
+          "app/schemas.py",
+          "app/storage/crud.py"
+        ],
+        "app/schemas.py": [],
+        "app/storage/crud.py": [
+          "app/models.py"
+        ]
+      },
+      "neighborMap": {
+        "app/database.py": [
+          {
+            "path": "app/config.py",
+            "batchIndex": 4,
+            "symbols": [
+              "Settings",
+              "get_settings"
+            ]
+          },
+          {
+            "path": "app/main.py",
+            "batchIndex": 4,
+            "symbols": [
+              "startup_event",
+              "shutdown_event",
+              "root"
+            ]
+          }
+        ],
+        "app/schemas.py": [
+          {
+            "path": "app/routers/demo.py",
+            "batchIndex": 4,
+            "symbols": [
+              "inject_fault",
+              "reset_simulation",
+              "backend_health"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "batchIndex": 2,
+      "files": [
+        {
+          "path": "app/analytics/advice.py",
+          "language": "python",
+          "sizeLines": 83,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/ingest/processing.py",
+          "language": "python",
+          "sizeLines": 39,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/ingest/serial_reader.py",
+          "language": "python",
+          "sizeLines": 55,
+          "fileCategory": "code"
+        },
+        {
+          "path": "tests/test_advice.py",
+          "language": "python",
+          "sizeLines": 37,
+          "fileCategory": "code"
+        },
+        {
+          "path": "tests/test_parser.py",
+          "language": "python",
+          "sizeLines": 32,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "app/analytics/advice.py": [],
+        "app/ingest/processing.py": [
+          "app/analytics/advice.py"
+        ],
+        "app/ingest/serial_reader.py": [
+          "app/ingest/event_bus.py",
+          "app/ingest/processing.py"
+        ],
+        "tests/test_advice.py": [
+          "app/analytics/advice.py",
+          "app/ingest/processing.py"
+        ],
+        "tests/test_parser.py": [
+          "app/ingest/serial_reader.py"
+        ]
+      },
+      "neighborMap": {
+        "app/ingest/processing.py": [
+          {
+            "path": "app/ingest/simulator.py",
+            "batchIndex": 4,
+            "symbols": [
+              "Simulator"
+            ]
+          },
+          {
+            "path": "app/ingest/websocket_device.py",
+            "batchIndex": 3,
+            "symbols": [
+              "parse_frame",
+              "websocket_device_endpoint"
+            ]
+          }
+        ],
+        "app/ingest/serial_reader.py": [
+          {
+            "path": "app/ingest/event_bus.py",
+            "batchIndex": 3,
+            "symbols": [
+              "EventBus"
+            ]
+          },
+          {
+            "path": "app/main.py",
+            "batchIndex": 4,
+            "symbols": [
+              "startup_event",
+              "shutdown_event",
+              "root"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "batchIndex": 3,
+      "files": [
+        {
+          "path": "app/analytics/health.py",
+          "language": "python",
+          "sizeLines": 67,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/ingest/event_bus.py",
+          "language": "python",
+          "sizeLines": 48,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/ingest/websocket_device.py",
+          "language": "python",
+          "sizeLines": 41,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/routers/websocket.py",
+          "language": "python",
+          "sizeLines": 56,
+          "fileCategory": "code"
+        },
+        {
+          "path": "tests/test_health.py",
+          "language": "python",
+          "sizeLines": 24,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "app/analytics/health.py": [],
+        "app/ingest/event_bus.py": [],
+        "app/ingest/websocket_device.py": [
+          "app/ingest/event_bus.py",
+          "app/ingest/processing.py"
+        ],
+        "app/routers/websocket.py": [
+          "app/analytics/health.py",
+          "app/ingest/event_bus.py",
+          "app/ingest/websocket_device.py"
+        ],
+        "tests/test_health.py": [
+          "app/analytics/health.py"
+        ]
+      },
+      "neighborMap": {
+        "app/ingest/event_bus.py": [
+          {
+            "path": "app/ingest/serial_reader.py",
+            "batchIndex": 2,
+            "symbols": [
+              "SerialReader"
+            ]
+          },
+          {
+            "path": "app/ingest/simulator.py",
+            "batchIndex": 4,
+            "symbols": [
+              "Simulator"
+            ]
+          }
+        ],
+        "app/ingest/websocket_device.py": [
+          {
+            "path": "app/ingest/processing.py",
+            "batchIndex": 2,
+            "symbols": [
+              "process_frame",
+              "advise"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "batchIndex": 4,
+      "files": [
+        {
+          "path": "app/config.py",
+          "language": "python",
+          "sizeLines": 27,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/ingest/simulator.py",
+          "language": "python",
+          "sizeLines": 153,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/main.py",
+          "language": "python",
+          "sizeLines": 53,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/routers/demo.py",
+          "language": "python",
+          "sizeLines": 24,
+          "fileCategory": "code"
+        },
+        {
+          "path": "tests/test_anc.py",
+          "language": "python",
+          "sizeLines": 17,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "app/config.py": [],
+        "app/ingest/simulator.py": [
+          "app/ingest/event_bus.py",
+          "app/ingest/processing.py"
+        ],
+        "app/main.py": [
+          "app/config.py",
+          "app/database.py",
+          "app/ingest/serial_reader.py",
+          "app/ingest/simulator.py"
+        ],
+        "app/routers/demo.py": [
+          "app/config.py",
+          "app/ingest/simulator.py",
+          "app/schemas.py"
+        ],
+        "tests/test_anc.py": [
+          "app/main.py"
+        ]
+      },
+      "neighborMap": {
+        "app/config.py": [
+          {
+            "path": "app/database.py",
+            "batchIndex": 1,
+            "symbols": [
+              "get_db"
+            ]
+          }
+        ],
+        "app/ingest/simulator.py": [
+          {
+            "path": "app/ingest/event_bus.py",
+            "batchIndex": 3,
+            "symbols": [
+              "EventBus"
+            ]
+          },
+          {
+            "path": "app/ingest/processing.py",
+            "batchIndex": 2,
+            "symbols": [
+              "process_frame",
+              "advise"
+            ]
+          }
+        ],
+        "app/main.py": [
+          {
+            "path": "app/database.py",
+            "batchIndex": 1,
+            "symbols": [
+              "get_db"
+            ]
+          },
+          {
+            "path": "app/ingest/serial_reader.py",
+            "batchIndex": 2,
+            "symbols": [
+              "SerialReader"
+            ]
+          }
+        ],
+        "app/routers/demo.py": [
+          {
+            "path": "app/schemas.py",
+            "batchIndex": 1,
+            "symbols": [
+              "TelemetryIn",
+              "SpectrumIn",
+              "InferenceIn",
+              "VehicleCommand",
+              "FaultInjection",
+              "RecordingCreate",
+              "BaselineRequest"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "batchIndex": 5,
+      "files": [
+        {
+          "path": ".env.example",
+          "language": "config",
+          "sizeLines": 6,
+          "fileCategory": "config"
+        },
+        {
+          "path": "README.md",
+          "language": "markdown",
+          "sizeLines": 95,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "requirements.txt",
+          "language": "txt",
+          "sizeLines": 14,
+          "fileCategory": "docs"
+        }
+      ],
+      "batchImportData": {
+        ".env.example": [],
+        "README.md": [],
+        "requirements.txt": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 6,
+      "files": [
+        {
+          "path": ".ua/config.json",
+          "language": "json",
+          "sizeLines": 1,
+          "fileCategory": "config"
+        },
+        {
+          "path": "app/__init__.py",
+          "language": "python",
+          "sizeLines": 1,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/analytics/train.py",
+          "language": "python",
+          "sizeLines": 31,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/routers/anc.py",
+          "language": "python",
+          "sizeLines": 75,
+          "fileCategory": "code"
+        },
+        {
+          "path": "data/recordings/.gitkeep",
+          "language": "unknown",
+          "sizeLines": 0,
+          "fileCategory": "code"
+        },
+        {
+          "path": "ml/__init__.py",
+          "language": "python",
+          "sizeLines": 1,
+          "fileCategory": "code"
+        },
+        {
+          "path": "models/.gitkeep",
+          "language": "unknown",
+          "sizeLines": 0,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        ".ua/config.json": [],
+        "app/__init__.py": [],
+        "app/analytics/train.py": [],
+        "app/routers/anc.py": [],
+        "data/recordings/.gitkeep": [],
+        "ml/__init__.py": [],
+        "models/.gitkeep": []
+      },
+      "neighborMap": {}
+    }
+  ]
+}

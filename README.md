@@ -2,15 +2,50 @@
 
 QuietDrive is a lightweight EV motor noise detection, severity grading, and noise-reduction platform built for a laptop-based demo. The backend exposes a FastAPI API and WebSocket feeds, and the frontend is a premium React + Tailwind dashboard that consumes the live telemetry.
 
+## Two editions
+
+The backend and dashboard are the same for both. `SOURCE` in `backend/.env` picks the input.
+
+| | Hardware edition | Software edition (fallback) |
+|---|---|---|
+| sensing | one **ESP32-S3 DevKitC-1**: 2× INMP441 (reference + error mic), ADXL345 1600 Hz, A3144 Hall rpm, ACS712 current, DS18B20 temp | laptop mic + phone accelerometer (phyphox) |
+| ANC | on the board: fault-aware narrowband FxLMS, reference from the Hall rpm every 4 ms, whine + 2nd harmonic, 1x shaft tone protected | ANC on recordings (`bridge/anc_recorded.py`, simulated speaker path), optional classic-ESP32 ANC via `live.py --esp32` |
+| link | USB serial 921600, `SOURCE=serial` | WebSocket `/ws/device/QD-01` from `bridge/live.py`, `SOURCE=sim` or `SOURCE=bridge` |
+| model | `bridge/models_esp32s3/` (train on hardware recordings), else the phone model as a stopgap, flagged **"needs retraining on hardware recordings"** | `bridge/models/` |
+| status | firmware compile-checked only; **not yet validated on hardware**, no measured accuracy or dB figures yet | working (demo build) |
+
+Hardware wiring, power, calibration and the validation checklist: [docs/hardware.md](docs/hardware.md).
+
+### Run the hardware edition (ESP32-S3)
+
+```powershell
+# 1) flash firmware/quietdrive_s3_selftest (Arduino IDE, board "ESP32S3 Dev Module"), fix every FAIL
+# 2) flash firmware/quietdrive_s3, close the Serial Monitor
+# 3) backend/.env:  SOURCE=serial   SERIAL_PORT=COM5   BAUD=921600
+cd backend; py -3.12 -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+cd frontend; npm run dev            # http://localhost:5173
+# 4) dashboard, section 03: motor at demo speed -> stop -> CALIBRATE -> motor on -> ANC ON
+# 5) record hardware training data (ANC off), then retrain:
+py -3.12 bridge/record_esp32.py --label normal --seconds 90
+py -3.12 bridge/record_esp32.py --label imbalance --level 2 --seconds 90
+py -3.12 bridge/train.py --data bridge/data_esp32s3      # -> bridge/models_esp32s3 (restart the backend)
+```
+
+### Run the software edition (fallback)
+
+Unchanged, see "Demo day" below: `SOURCE=sim` (or `SOURCE=bridge` for no simulator) and
+`bridge/live.py`.
+
 ## Repository layout
 
-- backend/: FastAPI app, simulator, analytics, SQLite storage, training code
+- backend/: FastAPI app, simulator, ESP32-S3 serial link (`app/ingest/hardware.py`), analytics, recorder
 - frontend/: Vite + React + TypeScript dashboard
-- firmware/: PlatformIO ESP32-S3 firmware project (Arduino framework) for the ECU
-- docs/protocol.md: exact serial/WiFi protocol that the firmware must follow
-- bridge/: laptop mic + phone accelerometer sensor bridge (stand-in for the ESP32), see bridge/README.md
+- firmware/quietdrive_s3/: ESP32-S3 hardware-edition firmware (Arduino sketch); firmware/quietdrive_s3_selftest/: sensor self-test
+- firmware/src, firmware/platformio.ini: the earlier PlatformIO scaffold (superseded by the sketches above)
+- docs/protocol.md: serial/WiFi protocol; docs/hardware.md: pins, wiring, power, calibration
+- bridge/: laptop mic + phone accelerometer sensor bridge (software edition), training, see bridge/README.md
 
-## Demo day
+## Demo day (software edition)
 
 Three terminals, all from the repo root (Python is `py -3.12`).
 
@@ -44,8 +79,8 @@ py -3.12 bridge/clean_voice.py --mic N          # keys: c cleaned, r raw, o play
 #    (real recorded motor noise, simulated speaker path). CLI: py -3.12 bridge/anc_recorded.py bridge/data/<session>
 ```
 
-The ESP32 path is unchanged: it connects to the same `/ws/device/QD-01` endpoint
-(or serial with `SOURCE=serial`). While any device streams for QD-01 the simulator pauses QD-01.
+Any device on the `/ws/device/QD-01` endpoint pauses the simulator for QD-01 while it streams.
+The ESP32-S3 hardware edition uses serial instead (`SOURCE=serial`, see above).
 
 ## Requirements
 
@@ -166,7 +201,7 @@ Example:
 ```env
 SOURCE=serial
 SERIAL_PORT=COM3
-BAUD=115200
+BAUD=921600
 ```
 
 or
@@ -174,10 +209,13 @@ or
 ```env
 SOURCE=serial
 SERIAL_PORT=/dev/ttyUSB0
-BAUD=115200
+BAUD=921600
 ```
 
-If the port is missing or disconnected, the backend logs a reconnect warning and keeps the simulator alive as a fallback if SOURCE is not set to serial.
+If the port is missing or disconnected, the backend logs a warning and retries every 2 s. The
+simulator doesn't run with `SOURCE=serial`. Device controls: `GET /api/device/status`,
+`POST /api/device/anc {"on":true}`, `POST /api/device/anc/calibrate`, `POST /api/device/set {...}`,
+`POST /api/device/record/start|stop`.
 
 ## Recorded sessions and model retraining
 

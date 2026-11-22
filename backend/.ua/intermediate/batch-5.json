@@ -1,0 +1,11 @@
+{"nodes":[
+{"id":"config:.env.example","type":"config","name":".env.example","filePath":".env.example","summary":"Template environment file defining the data source mode (sim/serial/wifi), serial port and baud rate, SQLite DB URL, frontend serving flag, and CORS origins.","tags":["configuration","environment","runtime-settings"],"complexity":"simple"},
+{"id":"document:README.md","type":"document","name":"README.md","filePath":"README.md","summary":"Backend setup guide covering venv installation, .env configuration, running via uvicorn app.main:app, curl examples for health/vehicles/simulator fault endpoints, and ML training via ml/train.py.","tags":["documentation","entry-point","setup-guide","api-examples"],"complexity":"moderate"},
+{"id":"document:requirements.txt","type":"document","name":"requirements.txt","filePath":"requirements.txt","summary":"Python dependency list: FastAPI, Uvicorn, SQLAlchemy, Pydantic(-settings), pyserial, numpy/scipy/scikit-learn/joblib for ML, websockets, and httpx for tests.","tags":["dependencies","build-system","python","configuration"],"complexity":"simple"}
+],"edges":[
+{"source":"config:.env.example","target":"file:app/config.py","type":"configures","direction":"forward","weight":0.6},
+{"source":"document:README.md","target":"file:app/main.py","type":"documents","direction":"forward","weight":0.5},
+{"source":"document:README.md","target":"file:ml/train.py","type":"documents","direction":"forward","weight":0.5},
+{"source":"document:README.md","target":"config:.env.example","type":"documents","direction":"forward","weight":0.5},
+{"source":"document:README.md","target":"document:requirements.txt","type":"related","direction":"forward","weight":0.5}
+]}

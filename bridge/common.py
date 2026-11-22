@@ -206,14 +206,15 @@ def calibrate_whine_order(data_dir, label="imbalance", level=3, win_s=4.0, save=
 
 
 # ---------------- one feature row ----------------
-def feature_row(audio, acc_t, acc_xyz):
-    """Raw 16 kHz audio window + raw phone samples -> (feature vector, extras)."""
+def feature_row(audio, acc_t, acc_xyz, shaft_hz=None):
+    """Raw 16 kHz audio window + raw accelerometer samples -> (feature vector, extras).
+    shaft_hz: measured shaft speed (ESP32-S3 Hall sensor); default = whine / WHINE_ORDER (phone)."""
     audio = prefilter_audio(audio)
     y, vfs = prefilter_vib(acc_t, acc_xyz)
     freqs, p = audio_power_spectrum(audio)
     a_bands = log_bands(freqs, p, N_AUDIO_BANDS, 50, 8000)
     whine = whine_frequency(freqs, p)
-    shaft = whine / WHINE_ORDER
+    shaft = shaft_hz if shaft_hz else whine / WHINE_ORDER
     v_bands, v1, v2, vrms = vib_features(y, vfs, shaft)
     rms_db = 20 * np.log10(np.sqrt(np.mean(np.square(audio))) + 1e-9)
     row = np.concatenate([a_bands, v_bands, [v1, v2, vrms, rms_db, whine]])

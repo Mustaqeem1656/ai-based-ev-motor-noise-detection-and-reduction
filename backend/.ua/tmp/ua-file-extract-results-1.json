@@ -1,0 +1,1034 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 6,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 6,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 6,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "app/database.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 16,
+      "nonEmptyLines": 12,
+      "functions": [
+        {
+          "name": "get_db",
+          "startLine": 11,
+          "endLine": 16,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "get_db",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "get_db",
+          "callee": "SessionLocal",
+          "lineNumber": 12
+        },
+        {
+          "caller": "get_db",
+          "callee": "db.close",
+          "lineNumber": 16
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "app/models.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 82,
+      "nonEmptyLines": 63,
+      "classes": [
+        {
+          "name": "Vehicle",
+          "startLine": 6,
+          "endLine": 14,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "TelemetryRecord",
+          "startLine": 17,
+          "endLine": 33,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "InferenceRecord",
+          "startLine": 36,
+          "endLine": 47,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "AlertRecord",
+          "startLine": 50,
+          "endLine": 59,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "ServiceEvent",
+          "startLine": 62,
+          "endLine": 69,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "RecordingSession",
+          "startLine": 72,
+          "endLine": 82,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Vehicle",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "TelemetryRecord",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "InferenceRecord",
+          "line": 36,
+          "isDefault": false
+        },
+        {
+          "name": "AlertRecord",
+          "line": 50,
+          "isDefault": false
+        },
+        {
+          "name": "ServiceEvent",
+          "line": 62,
+          "isDefault": false
+        },
+        {
+          "name": "RecordingSession",
+          "line": 72,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 6,
+        "functionCount": 0,
+        "classCount": 6
+      }
+    },
+    {
+      "path": "app/routers/recordings.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 75,
+      "nonEmptyLines": 60,
+      "functions": [
+        {
+          "name": "_feature_csv_path",
+          "startLine": 29,
+          "endLine": 30,
+          "params": [
+            "vid",
+            "ts",
+            "fault_type"
+          ]
+        },
+        {
+          "name": "start_recording",
+          "startLine": 34,
+          "endLine": 42,
+          "params": [
+            "payload"
+          ]
+        },
+        {
+          "name": "stop_recording",
+          "startLine": 46,
+          "endLine": 47,
+          "params": []
+        },
+        {
+          "name": "list_recordings",
+          "startLine": 51,
+          "endLine": 53,
+          "params": []
+        },
+        {
+          "name": "append_feature_row",
+          "startLine": 56,
+          "endLine": 75,
+          "params": [
+            "file_path",
+            "payload"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "_feature_csv_path",
+          "line": 29,
+          "isDefault": false
+        },
+        {
+          "name": "start_recording",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "stop_recording",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "list_recordings",
+          "line": 50,
+          "isDefault": false
+        },
+        {
+          "name": "append_feature_row",
+          "line": 56,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "start_recording",
+          "callee": "int",
+          "lineNumber": 35
+        },
+        {
+          "caller": "start_recording",
+          "callee": "time.time",
+          "lineNumber": 35
+        },
+        {
+          "caller": "start_recording",
+          "callee": "file_path.write_text",
+          "lineNumber": 38
+        },
+        {
+          "caller": "start_recording",
+          "callee": "\",\".join",
+          "lineNumber": 39
+        },
+        {
+          "caller": "start_recording",
+          "callee": "str",
+          "lineNumber": 42
+        },
+        {
+          "caller": "list_recordings",
+          "callee": "sorted",
+          "lineNumber": 52
+        },
+        {
+          "caller": "list_recordings",
+          "callee": "DATA_DIR.glob",
+          "lineNumber": 52
+        },
+        {
+          "caller": "append_feature_row",
+          "callee": "file_path.exists",
+          "lineNumber": 57
+        },
+        {
+          "caller": "append_feature_row",
+          "callee": "payload.get",
+          "lineNumber": 59
+        },
+        {
+          "caller": "append_feature_row",
+          "callee": "payload.get",
+          "lineNumber": 60
+        },
+        {
+          "caller": "append_feature_row",
+          "callee": "payload.get",
+          "lineNumber": 62
+        },
+        {
+          "caller": "append_feature_row",
+          "callee": "int",
+          "lineNumber": 62
+        },
+        {
+          "caller": "append_feature_row",
+          "callee": "time.time",
+          "lineNumber": 62
+        },
+        {
+          "caller": "append_feature_row",
+          "callee": "payload.get",
+          "lineNumber": 63
+        },
+        {
+          "caller": "append_feature_row",
+          "callee": "payload.get",
+          "lineNumber": 64
+        },
+        {
+          "caller": "append_feature_row",
+          "callee": "json.dumps",
+          "lineNumber": 65
+        },
+        {
+          "caller": "append_feature_row",
+          "callee": "json.dumps",
+          "lineNumber": 66
+        },
+        {
+          "caller": "append_feature_row",
+          "callee": "payload.get",
+          "lineNumber": 67
+        },
+        {
+          "caller": "append_feature_row",
+          "callee": "payload.get",
+          "lineNumber": 68
+        },
+        {
+          "caller": "append_feature_row",
+          "callee": "payload.get",
+          "lineNumber": 69
+        },
+        {
+          "caller": "append_feature_row",
+          "callee": "payload.get",
+          "lineNumber": 70
+        },
+        {
+          "caller": "append_feature_row",
+          "callee": "payload.get",
+          "lineNumber": 71
+        },
+        {
+          "caller": "append_feature_row",
+          "callee": "file_path.open",
+          "lineNumber": 73
+        },
+        {
+          "caller": "append_feature_row",
+          "callee": "csv.DictWriter",
+          "lineNumber": 74
+        },
+        {
+          "caller": "append_feature_row",
+          "callee": "writer.writerow",
+          "lineNumber": 75
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 5,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "app/routers/vehicles.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 43,
+      "nonEmptyLines": 33,
+      "functions": [
+        {
+          "name": "get_vehicles",
+          "startLine": 13,
+          "endLine": 17,
+          "params": [
+            "db"
+          ]
+        },
+        {
+          "name": "get_vehicle_detail",
+          "startLine": 21,
+          "endLine": 25,
+          "params": [
+            "vid",
+            "db"
+          ]
+        },
+        {
+          "name": "send_vehicle_command",
+          "startLine": 29,
+          "endLine": 33,
+          "params": [
+            "vid",
+            "payload",
+            "db"
+          ]
+        },
+        {
+          "name": "set_vehicle_baseline",
+          "startLine": 37,
+          "endLine": 43,
+          "params": [
+            "vid",
+            "payload",
+            "db"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "get_vehicles",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "get_vehicle_detail",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "send_vehicle_command",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "set_vehicle_baseline",
+          "line": 36,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "get_vehicles",
+          "callee": "Depends",
+          "lineNumber": 13
+        },
+        {
+          "caller": "get_vehicles",
+          "callee": "list_vehicles",
+          "lineNumber": 16
+        },
+        {
+          "caller": "get_vehicle_detail",
+          "callee": "Depends",
+          "lineNumber": 21
+        },
+        {
+          "caller": "get_vehicle_detail",
+          "callee": "get_vehicle",
+          "lineNumber": 22
+        },
+        {
+          "caller": "get_vehicle_detail",
+          "callee": "create_vehicle_if_missing",
+          "lineNumber": 24
+        },
+        {
+          "caller": "send_vehicle_command",
+          "callee": "Depends",
+          "lineNumber": 29
+        },
+        {
+          "caller": "send_vehicle_command",
+          "callee": "get_vehicle",
+          "lineNumber": 30
+        },
+        {
+          "caller": "send_vehicle_command",
+          "callee": "create_vehicle_if_missing",
+          "lineNumber": 32
+        },
+        {
+          "caller": "send_vehicle_command",
+          "callee": "payload.model_dump",
+          "lineNumber": 33
+        },
+        {
+          "caller": "set_vehicle_baseline",
+          "callee": "Depends",
+          "lineNumber": 37
+        },
+        {
+          "caller": "set_vehicle_baseline",
+          "callee": "get_vehicle",
+          "lineNumber": 38
+        },
+        {
+          "caller": "set_vehicle_baseline",
+          "callee": "create_vehicle_if_missing",
+          "lineNumber": 40
+        },
+        {
+          "caller": "set_vehicle_baseline",
+          "callee": "db.commit",
+          "lineNumber": 42
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "app/schemas.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 75,
+      "nonEmptyLines": 60,
+      "classes": [
+        {
+          "name": "TelemetryIn",
+          "startLine": 6,
+          "endLine": 21,
+          "methods": [],
+          "properties": [
+            "t",
+            "ts",
+            "vid",
+            "rpm",
+            "current_a",
+            "temp_c",
+            "vib_rms_g",
+            "vib_xyz",
+            "spl_ref_db",
+            "spl_err_db",
+            "pwm_hz",
+            "pwm_mode",
+            "anc_on",
+            "vib_cancel_on",
+            "vib_cancel_effort"
+          ]
+        },
+        {
+          "name": "SpectrumIn",
+          "startLine": 24,
+          "endLine": 30,
+          "methods": [],
+          "properties": [
+            "t",
+            "ts",
+            "vid",
+            "mic",
+            "fmax",
+            "bins"
+          ]
+        },
+        {
+          "name": "InferenceIn",
+          "startLine": 33,
+          "endLine": 50,
+          "methods": [],
+          "properties": [
+            "t",
+            "ts",
+            "vid",
+            "fault",
+            "conf",
+            "severity_raw",
+            "protected_hz",
+            "anc_connected",
+            "anc_on",
+            "anc_freq",
+            "anc_level_db",
+            "anc_reduction_db",
+            "anc_out",
+            "anc_at_limit",
+            "anc_tracking",
+            "anc_msg"
+          ]
+        },
+        {
+          "name": "VehicleCommand",
+          "startLine": 53,
+          "endLine": 57,
+          "methods": [],
+          "properties": [
+            "anc",
+            "pwm_mode",
+            "vib_cancel",
+            "motor_duty"
+          ]
+        },
+        {
+          "name": "FaultInjection",
+          "startLine": 60,
+          "endLine": 64,
+          "methods": [],
+          "properties": [
+            "vid",
+            "fault",
+            "severity",
+            "ramp_minutes"
+          ]
+        },
+        {
+          "name": "RecordingCreate",
+          "startLine": 67,
+          "endLine": 70,
+          "methods": [],
+          "properties": [
+            "vid",
+            "fault_type",
+            "severity_label"
+          ]
+        },
+        {
+          "name": "BaselineRequest",
+          "startLine": 73,
+          "endLine": 75,
+          "methods": [],
+          "properties": [
+            "vid",
+            "baseline_health"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "TelemetryIn",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "SpectrumIn",
+          "line": 24,
+          "isDefault": false
+        },
+        {
+          "name": "InferenceIn",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "VehicleCommand",
+          "line": 53,
+          "isDefault": false
+        },
+        {
+          "name": "FaultInjection",
+          "line": 60,
+          "isDefault": false
+        },
+        {
+          "name": "RecordingCreate",
+          "line": 67,
+          "isDefault": false
+        },
+        {
+          "name": "BaselineRequest",
+          "line": 73,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 7,
+        "functionCount": 0,
+        "classCount": 7
+      }
+    },
+    {
+      "path": "app/storage/crud.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 68,
+      "nonEmptyLines": 52,
+      "functions": [
+        {
+          "name": "get_vehicle",
+          "startLine": 8,
+          "endLine": 9,
+          "params": [
+            "db",
+            "vid"
+          ]
+        },
+        {
+          "name": "list_vehicles",
+          "startLine": 12,
+          "endLine": 13,
+          "params": [
+            "db"
+          ]
+        },
+        {
+          "name": "create_vehicle_if_missing",
+          "startLine": 16,
+          "endLine": 23,
+          "params": [
+            "db",
+            "vid",
+            "name"
+          ]
+        },
+        {
+          "name": "add_telemetry",
+          "startLine": 26,
+          "endLine": 42,
+          "params": [
+            "db",
+            "payload"
+          ]
+        },
+        {
+          "name": "add_inference",
+          "startLine": 45,
+          "endLine": 56,
+          "params": [
+            "db",
+            "payload"
+          ]
+        },
+        {
+          "name": "add_alert",
+          "startLine": 59,
+          "endLine": 64,
+          "params": [
+            "db",
+            "vid",
+            "severity",
+            "title",
+            "message"
+          ]
+        },
+        {
+          "name": "list_alerts",
+          "startLine": 67,
+          "endLine": 68,
+          "params": [
+            "db"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "get_vehicle",
+          "line": 8,
+          "isDefault": false
+        },
+        {
+          "name": "list_vehicles",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "create_vehicle_if_missing",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "add_telemetry",
+          "line": 26,
+          "isDefault": false
+        },
+        {
+          "name": "add_inference",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "add_alert",
+          "line": 59,
+          "isDefault": false
+        },
+        {
+          "name": "list_alerts",
+          "line": 67,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "get_vehicle",
+          "callee": "db.query(Vehicle).filter(Vehicle.vid == vid).first",
+          "lineNumber": 9
+        },
+        {
+          "caller": "get_vehicle",
+          "callee": "db.query(Vehicle).filter",
+          "lineNumber": 9
+        },
+        {
+          "caller": "get_vehicle",
+          "callee": "db.query",
+          "lineNumber": 9
+        },
+        {
+          "caller": "list_vehicles",
+          "callee": "db.query(Vehicle).all",
+          "lineNumber": 13
+        },
+        {
+          "caller": "list_vehicles",
+          "callee": "db.query",
+          "lineNumber": 13
+        },
+        {
+          "caller": "create_vehicle_if_missing",
+          "callee": "get_vehicle",
+          "lineNumber": 17
+        },
+        {
+          "caller": "create_vehicle_if_missing",
+          "callee": "Vehicle",
+          "lineNumber": 19
+        },
+        {
+          "caller": "create_vehicle_if_missing",
+          "callee": "db.add",
+          "lineNumber": 20
+        },
+        {
+          "caller": "create_vehicle_if_missing",
+          "callee": "db.commit",
+          "lineNumber": 21
+        },
+        {
+          "caller": "create_vehicle_if_missing",
+          "callee": "db.refresh",
+          "lineNumber": 22
+        },
+        {
+          "caller": "add_telemetry",
+          "callee": "db.add",
+          "lineNumber": 27
+        },
+        {
+          "caller": "add_telemetry",
+          "callee": "TelemetryRecord",
+          "lineNumber": 27
+        },
+        {
+          "caller": "add_telemetry",
+          "callee": "payload.get",
+          "lineNumber": 28
+        },
+        {
+          "caller": "add_telemetry",
+          "callee": "payload.get",
+          "lineNumber": 29
+        },
+        {
+          "caller": "add_telemetry",
+          "callee": "payload.get",
+          "lineNumber": 30
+        },
+        {
+          "caller": "add_telemetry",
+          "callee": "payload.get",
+          "lineNumber": 31
+        },
+        {
+          "caller": "add_telemetry",
+          "callee": "payload.get",
+          "lineNumber": 32
+        },
+        {
+          "caller": "add_telemetry",
+          "callee": "payload.get",
+          "lineNumber": 33
+        },
+        {
+          "caller": "add_telemetry",
+          "callee": "payload.get",
+          "lineNumber": 34
+        },
+        {
+          "caller": "add_telemetry",
+          "callee": "payload.get",
+          "lineNumber": 35
+        },
+        {
+          "caller": "add_telemetry",
+          "callee": "payload.get",
+          "lineNumber": 36
+        },
+        {
+          "caller": "add_telemetry",
+          "callee": "payload.get",
+          "lineNumber": 37
+        },
+        {
+          "caller": "add_telemetry",
+          "callee": "payload.get",
+          "lineNumber": 38
+        },
+        {
+          "caller": "add_telemetry",
+          "callee": "payload.get",
+          "lineNumber": 39
+        },
+        {
+          "caller": "add_telemetry",
+          "callee": "payload.get",
+          "lineNumber": 40
+        },
+        {
+          "caller": "add_telemetry",
+          "callee": "db.commit",
+          "lineNumber": 42
+        },
+        {
+          "caller": "add_inference",
+          "callee": "db.add",
+          "lineNumber": 46
+        },
+        {
+          "caller": "add_inference",
+          "callee": "InferenceRecord",
+          "lineNumber": 46
+        },
+        {
+          "caller": "add_inference",
+          "callee": "payload.get",
+          "lineNumber": 47
+        },
+        {
+          "caller": "add_inference",
+          "callee": "payload.get",
+          "lineNumber": 48
+        },
+        {
+          "caller": "add_inference",
+          "callee": "payload.get",
+          "lineNumber": 49
+        },
+        {
+          "caller": "add_inference",
+          "callee": "payload.get",
+          "lineNumber": 50
+        },
+        {
+          "caller": "add_inference",
+          "callee": "payload.get(\"conf\", {}).get",
+          "lineNumber": 51
+        },
+        {
+          "caller": "add_inference",
+          "callee": "payload.get",
+          "lineNumber": 51
+        },
+        {
+          "caller": "add_inference",
+          "callee": "payload.get(\"conf\", {}).get",
+          "lineNumber": 52
+        },
+        {
+          "caller": "add_inference",
+          "callee": "payload.get",
+          "lineNumber": 52
+        },
+        {
+          "caller": "add_inference",
+          "callee": "payload.get(\"conf\", {}).get",
+          "lineNumber": 53
+        },
+        {
+          "caller": "add_inference",
+          "callee": "payload.get",
+          "lineNumber": 53
+        },
+        {
+          "caller": "add_inference",
+          "callee": "str",
+          "lineNumber": 54
+        },
+        {
+          "caller": "add_inference",
+          "callee": "payload.get",
+          "lineNumber": 54
+        },
+        {
+          "caller": "add_inference",
+          "callee": "db.commit",
+          "lineNumber": 56
+        },
+        {
+          "caller": "add_alert",
+          "callee": "AlertRecord",
+          "lineNumber": 60
+        },
+        {
+          "caller": "add_alert",
+          "callee": "int",
+          "lineNumber": 60
+        },
+        {
+          "caller": "add_alert",
+          "callee": "__import__('time').time",
+          "lineNumber": 60
+        },
+        {
+          "caller": "add_alert",
+          "callee": "__import__",
+          "lineNumber": 60
+        },
+        {
+          "caller": "add_alert",
+          "callee": "db.add",
+          "lineNumber": 61
+        },
+        {
+          "caller": "add_alert",
+          "callee": "db.commit",
+          "lineNumber": 62
+        },
+        {
+          "caller": "add_alert",
+          "callee": "db.refresh",
+          "lineNumber": 63
+        },
+        {
+          "caller": "list_alerts",
+          "callee": "db.query(AlertRecord).order_by(AlertRecord.created_at.desc()).all",
+          "lineNumber": 68
+        },
+        {
+          "caller": "list_alerts",
+          "callee": "db.query(AlertRecord).order_by",
+          "lineNumber": 68
+        },
+        {
+          "caller": "list_alerts",
+          "callee": "db.query",
+          "lineNumber": 68
+        },
+        {
+          "caller": "list_alerts",
+          "callee": "AlertRecord.created_at.desc",
+          "lineNumber": 68
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 7,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    }
+  ]
+}

@@ -1,5 +1,12 @@
 # QuietDrive Firmware
 
+**Current hardware-edition firmware: the Arduino sketches** `quietdrive_s3/quietdrive_s3.ino` and
+`quietdrive_s3_selftest/quietdrive_s3_selftest.ino` (Arduino IDE, esp32 core 3.x, board "ESP32S3 Dev Module").
+Pins, wiring, power and calibration: [../docs/hardware.md](../docs/hardware.md).
+
+The PlatformIO project below (`src/`, `platformio.ini`) is the earlier scaffold. Its audio, ANC and model
+modules were placeholders, and it is kept only for reference.
+
 This folder contains the PlatformIO project for the ESP32-S3 ECU.
 
 ## Install PlatformIO

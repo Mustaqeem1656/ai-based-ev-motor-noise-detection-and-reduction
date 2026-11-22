@@ -4,7 +4,8 @@ This document defines the exact messages exchanged between the ESP32-S3 ECU and 
 
 ## Transport
 
-- Serial over USB: newline-delimited JSON at 115200 baud (or other configured rate)
+- Serial over USB: newline-delimited JSON at 921600 baud (ESP32-S3 hardware edition, `SOURCE=serial`;
+  see [Hardware edition (ESP32-S3)](#hardware-edition-esp32-s3) at the end for its extra fields and commands)
 - WiFi/WebSocket: ws://<host>:8000/ws/device/{vehicle_id}
 - The backend must ignore malformed JSON lines and never crash on bad input.
 
@@ -173,3 +174,102 @@ a:
 ```
 
 This packet should be discarded and logged as malformed.
+
+## Hardware edition (ESP32-S3)
+
+Firmware `firmware/quietdrive_s3`, backend `SOURCE=serial` (`backend/app/ingest/hardware.py`).
+All messages above still apply. The additions are listed here. The backend replaces `ts` with
+its own wall-clock milliseconds and keeps the device's `millis()` as `ts_dev`.
+
+### Backend -> ESP32-S3
+
+```json
+{"cmd":"set","pwm_mode":"spread","motor_duty":40,"anc":true,"anc_mu":0.01,"anc_vmax":0.6,"whine_order":21}
+{"cmd":"set","raw":true}
+{"cmd":"anc_calibrate","f_hz":1250}
+{"cmd":"anc_abort"}  {"cmd":"anc_reset"}  {"cmd":"ping"}
+{"t":"inf","fault":"imbalance","tier":"MILD","health":70,"protected_hz":[59.6],"severity_raw":0.33}
+```
+
+- `set` fields are all optional:
+  - `anc`: refused (ack `ok:false`) until the speaker path is calibrated.
+  - `anc_mu`: 0.0005–0.1.
+  - `anc_vmax`: 0–1.
+  - `whine_order`: must be ≥ 2, because order 1 is the protected shaft tone. Saved to flash.
+  - `pwm_mode`: `fixed` = 20 kHz; `spread` = ±15 % random hop every 2 ms; `optimize` is accepted
+    and behaves as `fixed`.
+  - `motor_duty`: 0–100 %.
+  - `raw`: switches on the recording stream (see below).
+- `anc_calibrate`: speaker-to-error-mic path table, about 9 s; the motor must be stopped.
+  `f_hz` is the centre, default the last whine frequency seen while running.
+- `inf` is the compact diagnosis sent back to the board after each `feat`. The board uses `tier`
+  for the RGB LED and `protected_hz` to mute any ANC channel near those tones. They're stored as
+  shaft orders, so they follow the speed.
+- Every command is answered with `{"t":"ack","ok":...,"reason":"..."}`.
+
+### ESP32-S3 -> backend
+
+`tel` (10 Hz) adds:
+
+| field | meaning |
+|---|---|
+| `src` | `"esp32s3"` |
+| `rpm_src` | `"hall"` |
+| `stopped` | Hall rpm below 300 |
+| `motor_duty` | % |
+| `anc_on` | ANC requested |
+| `anc_active` | at least one channel is outputting |
+| `anc_freq`, `anc_freq2` | target Hz (whine and 2nd harmonic), recomputed from the Hall rpm every 4 ms |
+| `anc_reduction_db`, `anc_reduction2_db` | drop in the error/reference-mic tone ratio against the ANC-off baseline, per 0.5 s window; `null` when that channel is inactive |
+| `anc_err_db` | whine-tone level at the error mic, dBFS |
+| `anc_out` | total output amplitude, 0–1 |
+| `anc_at_limit` | a channel is clamped at `anc_vmax` |
+| `anc_out_of_range` | target outside the calibrated ±20 % band |
+| `anc_mu`, `anc_vmax` | current settings |
+| `anc_cal` | `none` / `running` / `ok` / `failed` |
+| `anc_cal_pct`, `anc_tau_ms`, `anc_cal_center_hz`, `anc_msg` | calibration progress and status |
+| `protected_hz` | the 1x shaft tone plus the backend's protected tones, live Hz |
+| `whine_order` | in use |
+| `order_meas` | measured whine_hz ÷ Hall shaft Hz |
+| `audio_load_pct` | core-1 compute time per 4 ms block |
+| `raw` | raw recording stream is on |
+
+- `spl_ref_db` / `spl_err_db` are dBFS + 100 (uncalibrated, comparable over time, same
+  convention as the bridge).
+- `current_a`, `temp_c` and `vib_rms_g` are real readings; they're `null` when the sensor is
+  missing.
+
+`spec` (5 Hz; 2.5 Hz while `raw` is on) is sent for `mic:"ref"` and `mic:"err"`. The `err` frame
+is the real error-mic spectrum and adds `reduction_db`, `whine_hz` and `anc_hz` (the active ANC
+targets).
+
+`feat` (2 Hz, 1 s window) adds the model inputs that weren't listed before, plus extras:
+
+- `vib_rms`, `audio_rms_db`, `whine_hz`: model inputs.
+- `shaft_hz`, `rpm_src` (`hall`, or `whine` when the Hall signal is lost), `centroid_hz`,
+  `vib_ok`, `feat_v`.
+
+Feature differences from `bridge/common.py` are listed in `docs/hardware.md`.
+
+`log`: `{"t":"log","msg":"..."}`, human-readable status (boot report, calibration result,
+guard resets).
+
+`raw` / `rawv` (10 Hz, only while `raw` is on, for recording training sessions):
+
+```json
+{"t":"raw","seq":12,"fs":16000,"i0":192000,"t0_us":12000123,"gap":0,"a":"<base64 int16 LE, reference mic>"}
+{"t":"rawv","seq":12,"fs":1600,"i0":19200,"t_last_us":12099800,"gap":0,"g_per_lsb":0.0039,"v":"<base64 int16 LE x,y,z interleaved>"}
+```
+
+- `i0` is the index of the first sample.
+- `t0_us` / `t_last_us` are device `esp_timer` microseconds; `millis()` uses the same base.
+- `gap` counts samples the board had to skip.
+- These frames go only to the recorder (`/api/device/record/*`), never to the dashboard.
+
+### Backend -> dashboard (`/ws/live/{vid}`)
+
+- `inf` from the hardware path carries `src: "esp32s3"`, `model_source` (`"esp32s3"` or
+  `"phone"`) and `model_note`. While no hardware-trained model is loaded, `model_note` is
+  `"Phone-trained model: needs retraining on hardware recordings"`.
+- With Hall rpm < `STOPPED_RPM`, `inf.fault` is `"stopped"` and the model isn't run.
+- `rec` is published when a recording ends: `{"t":"rec","ok":true,"folder":"...","seconds":90.0,...}`.

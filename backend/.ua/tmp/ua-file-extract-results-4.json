@@ -1,0 +1,617 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 5,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 5,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 5,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "app/config.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 27,
+      "nonEmptyLines": 18,
+      "functions": [
+        {
+          "name": "get_settings",
+          "startLine": 23,
+          "endLine": 24,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "Settings",
+          "startLine": 7,
+          "endLine": 19,
+          "methods": [
+            "cors_origins_list"
+          ],
+          "properties": [
+            "source",
+            "serial_port",
+            "baud",
+            "db_url",
+            "serve_frontend",
+            "cors_origins"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Settings",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "get_settings",
+          "line": 22,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "cors_origins_list",
+          "callee": "item.strip",
+          "lineNumber": 19
+        },
+        {
+          "caller": "cors_origins_list",
+          "callee": "self.cors_origins.split",
+          "lineNumber": 19
+        },
+        {
+          "caller": "cors_origins_list",
+          "callee": "item.strip",
+          "lineNumber": 19
+        },
+        {
+          "caller": "get_settings",
+          "callee": "Settings",
+          "lineNumber": 24
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "app/ingest/simulator.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 153,
+      "nonEmptyLines": 133,
+      "classes": [
+        {
+          "name": "Simulator",
+          "startLine": 13,
+          "endLine": 150,
+          "methods": [
+            "__init__",
+            "start",
+            "stop",
+            "set_fault",
+            "reset",
+            "_run"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Simulator",
+          "line": 13,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "dict",
+          "lineNumber": 21
+        },
+        {
+          "caller": "__init__",
+          "callee": "self.base_states.items",
+          "lineNumber": 21
+        },
+        {
+          "caller": "start",
+          "callee": "self._task.done",
+          "lineNumber": 26
+        },
+        {
+          "caller": "start",
+          "callee": "asyncio.create_task",
+          "lineNumber": 29
+        },
+        {
+          "caller": "start",
+          "callee": "self._run",
+          "lineNumber": 29
+        },
+        {
+          "caller": "stop",
+          "callee": "self._task.cancel",
+          "lineNumber": 34
+        },
+        {
+          "caller": "set_fault",
+          "callee": "max",
+          "lineNumber": 43
+        },
+        {
+          "caller": "set_fault",
+          "callee": "min",
+          "lineNumber": 43
+        },
+        {
+          "caller": "set_fault",
+          "callee": "float",
+          "lineNumber": 44
+        },
+        {
+          "caller": "reset",
+          "callee": "dict",
+          "lineNumber": 47
+        },
+        {
+          "caller": "reset",
+          "callee": "self.base_states.items",
+          "lineNumber": 47
+        },
+        {
+          "caller": "_run",
+          "callee": "bus.device_active",
+          "lineNumber": 54
+        },
+        {
+          "caller": "_run",
+          "callee": "max",
+          "lineNumber": 60
+        },
+        {
+          "caller": "_run",
+          "callee": "math.sin",
+          "lineNumber": 62
+        },
+        {
+          "caller": "_run",
+          "callee": "len",
+          "lineNumber": 62
+        },
+        {
+          "caller": "_run",
+          "callee": "math.sin",
+          "lineNumber": 64
+        },
+        {
+          "caller": "_run",
+          "callee": "len",
+          "lineNumber": 64
+        },
+        {
+          "caller": "_run",
+          "callee": "math.sin",
+          "lineNumber": 75
+        },
+        {
+          "caller": "_run",
+          "callee": "min",
+          "lineNumber": 87
+        },
+        {
+          "caller": "_run",
+          "callee": "max",
+          "lineNumber": 87
+        },
+        {
+          "caller": "_run",
+          "callee": "int",
+          "lineNumber": 91
+        },
+        {
+          "caller": "_run",
+          "callee": "time.time",
+          "lineNumber": 91
+        },
+        {
+          "caller": "_run",
+          "callee": "round",
+          "lineNumber": 93
+        },
+        {
+          "caller": "_run",
+          "callee": "round",
+          "lineNumber": 94
+        },
+        {
+          "caller": "_run",
+          "callee": "round",
+          "lineNumber": 95
+        },
+        {
+          "caller": "_run",
+          "callee": "round",
+          "lineNumber": 96
+        },
+        {
+          "caller": "_run",
+          "callee": "round",
+          "lineNumber": 97
+        },
+        {
+          "caller": "_run",
+          "callee": "round",
+          "lineNumber": 97
+        },
+        {
+          "caller": "_run",
+          "callee": "round",
+          "lineNumber": 97
+        },
+        {
+          "caller": "_run",
+          "callee": "round",
+          "lineNumber": 98
+        },
+        {
+          "caller": "_run",
+          "callee": "round",
+          "lineNumber": 99
+        },
+        {
+          "caller": "_run",
+          "callee": "round",
+          "lineNumber": 104
+        },
+        {
+          "caller": "_run",
+          "callee": "bus.publish",
+          "lineNumber": 106
+        },
+        {
+          "caller": "_run",
+          "callee": "process_frame",
+          "lineNumber": 106
+        },
+        {
+          "caller": "_run",
+          "callee": "max",
+          "lineNumber": 109
+        },
+        {
+          "caller": "_run",
+          "callee": "math.sin",
+          "lineNumber": 109
+        },
+        {
+          "caller": "_run",
+          "callee": "math.sin",
+          "lineNumber": 109
+        },
+        {
+          "caller": "_run",
+          "callee": "range",
+          "lineNumber": 109
+        },
+        {
+          "caller": "_run",
+          "callee": "bus.publish",
+          "lineNumber": 119
+        },
+        {
+          "caller": "_run",
+          "callee": "int",
+          "lineNumber": 121
+        },
+        {
+          "caller": "_run",
+          "callee": "time.time",
+          "lineNumber": 121
+        },
+        {
+          "caller": "_run",
+          "callee": "bus.publish",
+          "lineNumber": 127
+        },
+        {
+          "caller": "_run",
+          "callee": "int",
+          "lineNumber": 129
+        },
+        {
+          "caller": "_run",
+          "callee": "time.time",
+          "lineNumber": 129
+        },
+        {
+          "caller": "_run",
+          "callee": "bus.publish",
+          "lineNumber": 140
+        },
+        {
+          "caller": "_run",
+          "callee": "process_frame",
+          "lineNumber": 140
+        },
+        {
+          "caller": "_run",
+          "callee": "int",
+          "lineNumber": 142
+        },
+        {
+          "caller": "_run",
+          "callee": "time.time",
+          "lineNumber": 142
+        },
+        {
+          "caller": "_run",
+          "callee": "round",
+          "lineNumber": 146
+        },
+        {
+          "caller": "_run",
+          "callee": "min",
+          "lineNumber": 146
+        },
+        {
+          "caller": "_run",
+          "callee": "max",
+          "lineNumber": 147
+        },
+        {
+          "caller": "_run",
+          "callee": "int",
+          "lineNumber": 147
+        },
+        {
+          "caller": "_run",
+          "callee": "max",
+          "lineNumber": 147
+        },
+        {
+          "caller": "_run",
+          "callee": "int",
+          "lineNumber": 147
+        },
+        {
+          "caller": "_run",
+          "callee": "asyncio.sleep",
+          "lineNumber": 150
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "app/main.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 53,
+      "nonEmptyLines": 40,
+      "functions": [
+        {
+          "name": "startup_event",
+          "startLine": 32,
+          "endLine": 37,
+          "params": []
+        },
+        {
+          "name": "shutdown_event",
+          "startLine": 41,
+          "endLine": 42,
+          "params": []
+        },
+        {
+          "name": "root",
+          "startLine": 52,
+          "endLine": 53,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "startup_event",
+          "line": 31,
+          "isDefault": false
+        },
+        {
+          "name": "shutdown_event",
+          "line": 40,
+          "isDefault": false
+        },
+        {
+          "name": "root",
+          "line": 51,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "startup_event",
+          "callee": "simulator.start",
+          "lineNumber": 34
+        },
+        {
+          "caller": "startup_event",
+          "callee": "SerialReader",
+          "lineNumber": 36
+        },
+        {
+          "caller": "startup_event",
+          "callee": "serial_reader.start",
+          "lineNumber": 37
+        },
+        {
+          "caller": "shutdown_event",
+          "callee": "simulator.stop",
+          "lineNumber": 42
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "app/routers/demo.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 24,
+      "nonEmptyLines": 16,
+      "functions": [
+        {
+          "name": "inject_fault",
+          "startLine": 11,
+          "endLine": 13,
+          "params": [
+            "payload"
+          ]
+        },
+        {
+          "name": "reset_simulation",
+          "startLine": 17,
+          "endLine": 19,
+          "params": []
+        },
+        {
+          "name": "backend_health",
+          "startLine": 23,
+          "endLine": 24,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "inject_fault",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "reset_simulation",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "backend_health",
+          "line": 22,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "inject_fault",
+          "callee": "simulator.set_fault",
+          "lineNumber": 12
+        },
+        {
+          "caller": "reset_simulation",
+          "callee": "simulator.reset",
+          "lineNumber": 18
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "tests/test_anc.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 17,
+      "nonEmptyLines": 11,
+      "functions": [
+        {
+          "name": "test_sessions_listing_works",
+          "startLine": 8,
+          "endLine": 10,
+          "params": []
+        },
+        {
+          "name": "test_rejects_bad_paths_and_files",
+          "startLine": 13,
+          "endLine": 17,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "test_sessions_listing_works",
+          "line": 8,
+          "isDefault": false
+        },
+        {
+          "name": "test_rejects_bad_paths_and_files",
+          "line": 13,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "test_sessions_listing_works",
+          "callee": "client.get",
+          "lineNumber": 9
+        },
+        {
+          "caller": "test_sessions_listing_works",
+          "callee": "isinstance",
+          "lineNumber": 10
+        },
+        {
+          "caller": "test_sessions_listing_works",
+          "callee": "r.json",
+          "lineNumber": 10
+        },
+        {
+          "caller": "test_rejects_bad_paths_and_files",
+          "callee": "client.post",
+          "lineNumber": 14
+        },
+        {
+          "caller": "test_rejects_bad_paths_and_files",
+          "callee": "client.post",
+          "lineNumber": 15
+        },
+        {
+          "caller": "test_rejects_bad_paths_and_files",
+          "callee": "client.get",
+          "lineNumber": 16
+        },
+        {
+          "caller": "test_rejects_bad_paths_and_files",
+          "callee": "client.get",
+          "lineNumber": 17
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    }
+  ]
+}

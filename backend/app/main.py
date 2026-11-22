@@ -6,9 +6,9 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import Base, engine
-from app.ingest.serial_reader import SerialReader
+from app.ingest.hardware import start_hardware
 from app.ingest.simulator import simulator
-from app.routers import anc, demo, recordings, vehicles, websocket
+from app.routers import anc, demo, device, recordings, vehicles, websocket
 
 Base.metadata.create_all(bind=engine)
 
@@ -26,15 +26,16 @@ app.include_router(demo.router)
 app.include_router(recordings.router)
 app.include_router(websocket.router)
 app.include_router(anc.router)
+app.include_router(device.router)
 
 
 @app.on_event("startup")
 async def startup_event() -> None:
-    if settings.source == "sim":
+    if settings.source == "sim":            # simulator; bridge/live.py can still stream (pauses it per vehicle)
         await simulator.start()
-    elif settings.source == "serial":
-        serial_reader = SerialReader(settings.serial_port, settings.baud)
-        await serial_reader.start()
+    elif settings.source == "serial":       # hardware edition: ESP32-S3 on SERIAL_PORT
+        await start_hardware()
+    # "bridge": software edition only, no simulator
 
 
 @app.on_event("shutdown")

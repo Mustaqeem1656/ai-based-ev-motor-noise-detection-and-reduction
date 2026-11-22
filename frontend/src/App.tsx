@@ -7,15 +7,24 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const VID = 'QD-01';
 
 type Num = number | null | undefined;
-type Tel = { rpm?: Num; current_a?: Num; temp_c?: Num; vib_rms_g?: Num; spl_ref_db?: Num; spl_err_db?: Num; anc_on?: boolean; vib_xyz?: Num[] };
+type Tel = {
+  rpm?: Num; current_a?: Num; temp_c?: Num; vib_rms_g?: Num; spl_ref_db?: Num; spl_err_db?: Num; anc_on?: boolean; vib_xyz?: Num[];
+  // hardware edition (ESP32-S3, firmware/quietdrive_s3)
+  src?: string; rpm_src?: string; stopped?: boolean; motor_duty?: Num; whine_order?: Num; order_meas?: Num;
+  anc_active?: boolean; anc_freq?: Num; anc_freq2?: Num; anc_reduction_db?: Num; anc_reduction2_db?: Num;
+  anc_out?: Num; anc_vmax?: Num; anc_at_limit?: boolean; anc_out_of_range?: boolean; protected_hz?: number[];
+  anc_cal?: string; anc_cal_pct?: Num; anc_msg?: string;
+};
+const isHw = (tel: Tel) => tel.src === 'esp32s3';
 type Inf = {
   fault?: string; conf?: Record<string, Num>; severity_raw?: Num; protected_hz?: number[];
   points?: Num; health?: Num; tier?: string; action?: string; advice?: string; reason?: string;
   sensors_agree?: boolean; fix_db?: Num; fix_vib_pct?: Num; ts?: number;
   anc_connected?: boolean; anc_on?: boolean; anc_freq?: Num; anc_level_db?: Num; anc_reduction_db?: Num;
   anc_out?: Num; anc_at_limit?: boolean; anc_tracking?: boolean; anc_msg?: string;
+  model_source?: string | null; model_note?: string | null;
 };
-type NR = { ts: number; ref?: number; err?: number; reduction?: Num; whine?: Num; notches?: number[] };
+type NR = { ts: number; ref?: number; err?: number; reduction?: Num; whine?: Num; notches?: number[]; anc?: number[] };
 type Spec = { mic: string; fmax: number; bins: number[] };
 
 // Merges the per-type live frames (tel, inf, spec ref/err) into one state.
@@ -44,7 +53,7 @@ function useLive(vid: string) {
           specListeners.current.forEach((f) => f(m));
           const lvl = 10 * Math.log10(m.bins.reduce((a: number, db: number) => a + Math.pow(10, db / 10), 0) / m.bins.length);
           setNr((p) => ({ ...p, ts: Date.now(), [m.mic === 'err' ? 'err' : 'ref']: lvl,
-            ...(m.mic === 'err' ? { reduction: m.reduction_db, whine: m.whine_hz, notches: m.notch_hz } : {}) }));
+            ...(m.mic === 'err' ? { reduction: m.reduction_db, whine: m.whine_hz, notches: m.notch_hz, anc: m.anc_hz } : {}) }));
         }
       };
     };
@@ -164,6 +173,9 @@ function Fault({ inf }: { inf: Inf }) {
       <p className="mt-2 text-[14px] text-mute">
         {inf.sensors_agree == null ? ' ' : inf.sensors_agree ? 'Sound and vibration agree.' : 'Sensors disagree: points reduced by 30%.'}
       </p>
+      {inf.model_note && (
+        <p className="num mt-2 border-l-[3px] border-accent pl-2 text-[12px] font-medium tracking-[0.04em] text-ink">{inf.model_note}</p>
+      )}
       {inf.protected_hz && inf.protected_hz.length > 0 && (
         <div className="mt-4">
           <span className="num inline-block whitespace-nowrap border-b-[3px] border-accent pb-0.5 text-[15px] tracking-[0.06em] text-ink">
@@ -178,9 +190,11 @@ function Fault({ inf }: { inf: Inf }) {
 
 // ---------------------------------------------------------------- datasheet
 function Datasheet({ tel, inf }: { tel: Tel; inf: Inf }) {
+  const hw = isHw(tel);
+  const speedSrc = tel.rpm_src === 'hall' ? 'Hall sensor' : isNum(tel.rpm) ? 'estimated from whine' : undefined;
   const rows: [string, Num, number, string, React.ReactNode?][] = [
-    ['Shaft speed', tel.rpm, 0, 'rpm'],
-    ['Sound level', tel.spl_ref_db, 1, 'dB', isNum(tel.spl_err_db) ? <>cleaned <span className="num text-ink">{fmt(tel.spl_err_db, 1)}</span> dB</> : undefined],
+    ['Shaft speed', tel.rpm, 0, 'rpm', speedSrc && <>source <span className="num text-ink">{speedSrc}</span>{hw && tel.stopped ? ' · stopped' : ''}</>],
+    ['Sound level', tel.spl_ref_db, 1, 'dB', isNum(tel.spl_err_db) ? <>{hw ? 'cabin mic' : 'cleaned'} <span className="num text-ink">{fmt(tel.spl_err_db, 1)}</span> dB</> : undefined],
     ['Vibration', tel.vib_rms_g, 3, 'g rms'],
     ['Current', tel.current_a, 1, 'A'],
     ['Temperature', tel.temp_c, 1, '°C'],
@@ -200,7 +214,7 @@ function Datasheet({ tel, inf }: { tel: Tel; inf: Inf }) {
             </td>
             <td className="w-[64px] py-[10px] pl-2 align-baseline">
               {isNum(v) ? <span className="num text-[13px] font-medium text-mute">{unit}</span>
-                : <span className="whitespace-nowrap text-[12px] text-mute">{label === 'Severity' ? 'none' : 'not fitted'}</span>}
+                : <span className="whitespace-nowrap text-[12px] text-mute">{label === 'Severity' ? 'none' : hw ? 'no reading' : 'not fitted'}</span>}
             </td>
           </tr>
         ))}
@@ -292,7 +306,7 @@ function Strip({ mic, listeners, title, protectedHz, height, onRate }: {
   );
 }
 
-function Spectrum({ listeners, protectedHz }: { listeners: React.MutableRefObject<((s: Spec) => void)[]>; protectedHz?: number[] }) {
+function Spectrum({ listeners, protectedHz, hw }: { listeners: React.MutableRefObject<((s: Spec) => void)[]>; protectedHz?: number[]; hw?: boolean }) {
   const [sPerCol, setSPerCol] = useState(0.2);
   const onRate = useRef((d: number) => setSPerCol(d)).current;
   const span = sPerCol * COLS;
@@ -300,9 +314,9 @@ function Spectrum({ listeners, protectedHz }: { listeners: React.MutableRefObjec
   const ticks = Array.from({ length: Math.floor(span / step) + 1 }, (_, i) => i * step);
   return (
     <div>
-      <Strip mic="ref" listeners={listeners} title="Cabin mic — raw" protectedHz={protectedHz} height="clamp(140px, 16.5vh, 200px)" onRate={onRate} />
+      <Strip mic="ref" listeners={listeners} title={hw ? 'Reference mic (motor) — raw' : 'Cabin mic — raw'} protectedHz={protectedHz} height="clamp(140px, 16.5vh, 200px)" onRate={onRate} />
       <div className="h-3" />
-      <Strip mic="err" listeners={listeners} title="After noise reduction" height="clamp(76px, 8.5vh, 104px)" />
+      <Strip mic="err" listeners={listeners} title={hw ? 'Error mic (cabin) — after on-board ANC' : 'After noise reduction'} height="clamp(76px, 8.5vh, 104px)" />
       <div className="grid grid-cols-[56px_1fr]">
         <span />
         <div className="relative h-6">
@@ -319,7 +333,7 @@ function Spectrum({ listeners, protectedHz }: { listeners: React.MutableRefObjec
 }
 
 // ---------------------------------------------------------------- noise reduction
-function NoiseMeter({ nr }: { nr: NR }) {
+function NoiseMeter({ nr, hw }: { nr: NR; hw?: boolean }) {
   const active = nr.err != null && Date.now() - nr.ts < 3000;
   const lo = 20, hi = 100;
   const pos = (v: Num) => (isNum(v) ? Math.max(0, Math.min(1, (v - lo) / (hi - lo))) * 100 : 0);
@@ -335,8 +349,8 @@ function NoiseMeter({ nr }: { nr: NR }) {
   return (
     <div className="grid grid-cols-12 items-end gap-x-8">
       <div className="col-span-8 space-y-3">
-        {bar('Raw', nr.ref, 'bg-ink')}
-        {bar('Cleaned', active ? nr.err : undefined, 'bg-teal')}
+        {bar(hw ? 'Motor mic' : 'Raw', nr.ref, 'bg-ink')}
+        {bar(hw ? 'Cabin mic' : 'Cleaned', active ? nr.err : undefined, 'bg-teal')}
         <div className="grid grid-cols-[96px_1fr_72px] gap-3">
           <span />
           <div className="relative h-5">
@@ -349,13 +363,15 @@ function NoiseMeter({ nr }: { nr: NR }) {
           <span />
         </div>
         <p className="lbl !normal-case !tracking-normal !text-[13px]">
-          {active
+          {active && hw
+            ? <>ANC targets <span className="num text-ink">{(nr.anc ?? []).map((f) => f.toFixed(0)).join(' / ') || 'off'}</span> Hz · levels are two different mics, see the ANC card for the reduction</>
+            : active
             ? <>Whine <span className="num text-ink">{fmt(nr.whine, 0)} Hz</span> · notches <span className="num text-ink">{(nr.notches ?? []).map((f) => f.toFixed(0)).join(' / ') || 'off'}</span></>
-            : 'Run bridge/clean_voice.py to see live noise removal.'}
+            : hw ? 'Waiting for the ESP32-S3 error-mic spectrum.' : 'Run bridge/clean_voice.py to see live noise removal.'}
         </p>
       </div>
       <div className="col-span-4 border-l-[1.5px] border-ink pl-6">
-        <Label>Whine removed</Label>
+        <Label>{hw ? 'Whine removed (ANC)' : 'Whine removed'}</Label>
         <div className="num mt-1 text-[clamp(40px,3.4vw,64px)] leading-none tracking-[-0.03em] text-ink">
           {active && isNum(nr.reduction) ? <><N v={-Math.abs(nr.reduction)} d={1} /><span className="ml-2 text-[0.42em] text-mute">dB</span></>
             : <span className="font-sans text-[18px] font-normal tracking-normal text-mute">no measurement yet</span>}
@@ -365,48 +381,96 @@ function NoiseMeter({ nr }: { nr: NR }) {
   );
 }
 
-// On-board ANC (ESP32) status, merged into inf by bridge/live.py --esp32.
-function EspAnc({ inf }: { inf: Inf }) {
-  if (!inf.anc_connected) {
+// On-board ANC card.
+//  hardware edition: ESP32-S3 tel fields (anc_*); controls go to /api/device/* (backend -> serial)
+//  software edition: classic-ESP32 status merged into inf by bridge/live.py --esp32 (read-only)
+async function deviceCmd(path: string, body: object = {}) {
+  const r = await fetch(`${API_URL}/api/device/${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(typeof j.detail === 'string' ? j.detail : `HTTP ${r.status}`);
+  return j;
+}
+
+function OnboardAnc({ tel, inf }: { tel: Tel; inf: Inf }) {
+  const hw = isHw(tel);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const run = async (path: string, body: object = {}) => {
+    setBusy(true); setErr(null);
+    try { await deviceCmd(path, body); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+  };
+  const s = hw
+    ? { on: tel.anc_on, active: tel.anc_active, freq: tel.anc_freq, freq2: tel.anc_freq2, red: tel.anc_reduction_db,
+        out: tel.anc_out, vmax: tel.anc_vmax ?? 1, limit: tel.anc_at_limit, msg: tel.anc_msg, prot: tel.protected_hz ?? [] }
+    : { on: inf.anc_on, active: inf.anc_on, freq: inf.anc_freq, freq2: null as Num, red: inf.anc_reduction_db,
+        out: inf.anc_out, vmax: 1, limit: inf.anc_at_limit, msg: inf.anc_msg, prot: inf.protected_hz ?? [] };
+  const title = hw ? 'On-board ANC (ESP32-S3)' : 'On-board ANC (ESP32)';
+  if (!hw && !inf.anc_connected) {
     return (
       <div className="mt-6 border-t hair pt-3">
-        <Label>On-board ANC (ESP32)</Label>
+        <Label>{title}</Label>
         <p className="mt-2 text-[13px] text-mute">ESP32 not connected</p>
       </div>
     );
   }
-  const out = isNum(inf.anc_out) ? Math.max(0, Math.min(1, inf.anc_out)) : null;
+  const out = isNum(s.out) && s.vmax ? Math.max(0, Math.min(1, s.out / s.vmax)) : null;
+  const calibrating = tel.anc_cal === 'running';
+  const calOk = tel.anc_cal === 'ok';
+  const btn = 'num border-2 border-ink px-3 py-1 text-[12px] tracking-[0.12em] text-ink transition-colors hover:bg-ink hover:text-paper disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-ink';
   return (
     <div className="mt-6 border-t hair pt-3">
-      <div className="flex items-baseline justify-between gap-4">
-        <Label>On-board ANC (ESP32)</Label>
-        <span className={`num border-[1.5px] px-2 py-[1px] text-[12px] font-medium tracking-[0.1em] ${inf.anc_on ? 'border-ink bg-ink text-paper' : 'border-ink text-ink'}`}>
-          {inf.anc_on ? 'ON' : 'OFF'}
-        </span>
+      <div className="flex flex-wrap items-baseline justify-between gap-4">
+        <Label>{title}</Label>
+        <div className="flex items-center gap-2">
+          {hw && <>
+            <button className={btn} disabled={busy || calibrating || !calOk} title={calOk ? '' : 'Calibrate first'}
+              onClick={() => run('anc', { on: !s.on })}>{s.on ? 'ANC OFF' : 'ANC ON'}</button>
+            <button className={btn} disabled={busy || calibrating || !tel.stopped} title={tel.stopped ? '' : 'Stop the motor first'}
+              onClick={() => run('anc/calibrate')}>{calibrating ? `CALIBRATING ${fmt(tel.anc_cal_pct)}%` : 'CALIBRATE'}</button>
+          </>}
+          <span className={`num border-[1.5px] px-2 py-[1px] text-[12px] font-medium tracking-[0.1em] ${s.on ? 'border-ink bg-ink text-paper' : 'border-ink text-ink'}`}>
+            {s.on ? (hw && !s.active ? 'ON · HOLD' : 'ON') : 'OFF'}
+          </span>
+        </div>
       </div>
       <div className="mt-3 grid grid-cols-12 items-end gap-x-8">
         <div className="col-span-8 space-y-3">
-          <div className="flex items-baseline gap-2">
+          <div className="flex flex-wrap items-baseline gap-2">
             <span className="lbl !text-ink w-[96px]">Target</span>
-            <N v={inf.anc_freq} d={1} className="text-[16px] text-ink" /><span className="lbl !text-[11px]">Hz</span>
-            <span className="lbl ml-auto">speed tracking <span className="num text-ink">{inf.anc_tracking ? 'ON' : 'OFF'}</span></span>
+            <N v={s.freq} d={1} className="text-[16px] text-ink" /><span className="lbl !text-[11px]">Hz</span>
+            {isNum(s.freq2) && <><span className="text-mute">+</span><N v={s.freq2} d={1} className="text-[16px] text-ink" /><span className="lbl !text-[11px]">Hz</span></>}
+            <span className="lbl ml-auto">
+              {hw ? <>follows Hall rpm · order <span className="num text-ink">{fmt(tel.whine_order, 0)}</span>{isNum(tel.order_meas) && <> (measured <span className="num text-ink">{fmt(tel.order_meas, 2)}</span>)</>}</>
+                : <>speed tracking <span className="num text-ink">{inf.anc_tracking ? 'ON' : 'OFF'}</span></>}
+            </span>
           </div>
           <div className="grid grid-cols-[96px_1fr_72px] items-center gap-3">
             <span className="lbl !text-ink">Speaker out</span>
             <div className="relative h-[10px] border-b border-ink">
-              {out != null && <div className={`absolute bottom-0 left-0 h-[8px] ${inf.anc_at_limit ? 'bg-severe' : 'bg-ink'} transition-[width] duration-500`} style={{ width: `${out * 100}%` }} />}
+              {out != null && <div className={`absolute bottom-0 left-0 h-[8px] ${s.limit ? 'bg-severe' : 'bg-ink'} transition-[width] duration-500`} style={{ width: `${out * 100}%` }} />}
             </div>
-            <span className="text-right"><N v={inf.anc_out} d={2} className="text-[16px] text-ink" /></span>
+            <span className="text-right"><N v={s.out} d={2} className="text-[16px] text-ink" /></span>
           </div>
-          {inf.anc_at_limit && <p className="num text-[12px] font-medium tracking-[0.1em]" style={{ color: 'var(--sev-severe)' }}>AT LIMIT</p>}
-          {inf.anc_msg && <p className="truncate text-[12px] text-mute">{inf.anc_msg}</p>}
+          <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
+            {s.limit && <span className="num text-[12px] font-medium tracking-[0.1em]" style={{ color: 'var(--sev-severe)' }}>AT LIMIT</span>}
+            {hw && tel.anc_out_of_range && <span className="num text-[12px] font-medium tracking-[0.1em] text-ink">OUTSIDE CALIBRATED RANGE — recalibrate at this speed</span>}
+            {s.prot.length > 0 && (
+              <span className="num whitespace-nowrap border-b-[3px] border-accent pb-0.5 text-[12px] tracking-[0.06em] text-ink">
+                PROTECTED {s.prot.map((f) => f.toFixed(0)).join(' / ')} Hz <span className="text-mute">— never cancelled</span>
+              </span>
+            )}
+            {hw && <span className="lbl">path <span className="num text-ink">{tel.anc_cal ?? '—'}</span></span>}
+          </div>
+          {err && <p className="num text-[12px] text-severe">{err}</p>}
+          {s.msg && <p className="truncate text-[12px] text-mute">{s.msg}</p>}
         </div>
         <div className="col-span-4 border-l-[1.5px] border-ink pl-6">
           <Label>Reduction</Label>
           <div className="num mt-1 text-[clamp(40px,3.4vw,64px)] leading-none tracking-[-0.03em] text-ink">
-            {isNum(inf.anc_reduction_db) ? <><N v={inf.anc_reduction_db} d={1} /><span className="ml-2 text-[0.42em] text-mute">dB</span></>
-              : <span className="font-sans text-[18px] font-normal tracking-normal text-mute">waiting for status</span>}
+            {isNum(s.red) ? <><N v={s.red} d={1} /><span className="ml-2 text-[0.42em] text-mute">dB</span></>
+              : <span className="font-sans text-[18px] font-normal tracking-normal text-mute">{hw ? (s.on ? 'adapting…' : 'ANC off') : 'waiting for status'}</span>}
           </div>
+          {hw && isNum(tel.anc_reduction2_db) && <p className="lbl mt-1">2nd harmonic <span className="num text-ink">{fmt(tel.anc_reduction2_db, 1)} dB</span></p>}
         </div>
       </div>
     </div>
@@ -423,6 +487,7 @@ export default function App() {
   const health = inf.health ?? (inf.severity_raw != null ? 100 - inf.severity_raw * 100 : null);
   const tier = inf.tier ?? (health == null ? undefined : health >= 80 ? 'HEALTHY' : health >= 55 ? 'MILD' : health >= 25 ? 'MODERATE' : 'SEVERE');
   const color = SEV_COLOR[tier ?? ''] ?? 'var(--mute)';
+  const hw = isHw(tel);
   const [status, dot] = !connected ? ['DISCONNECTED', 'var(--sev-severe)'] : stale ? ['NO DATA', 'var(--sev-mild)']
     : looksSimulated(tel) ? ['SIMULATED', 'var(--sev-mild)'] : ['LIVE', 'var(--teal)'];
 
@@ -440,6 +505,7 @@ export default function App() {
             </nav>
           </div>
           <div className="flex items-baseline gap-8">
+            {hw && <span className="lbl">Source <span className="num ml-1 text-[14px] text-ink">ESP32-S3</span></span>}
             <span className="lbl">Vehicle <span className="num ml-1 text-[14px] text-ink">{VID}</span></span>
             <span className="lbl flex items-center gap-2 !text-ink">
               <span className="inline-block h-2 w-2 rounded-full" style={{ background: dot }} />{status}
@@ -479,11 +545,11 @@ export default function App() {
             </section>
             <section className="col-span-9">
               <Head n="02" right="paper → ink → orange · shared scale">Spectrum waterfall, 0–4 kHz</Head>
-              <Spectrum listeners={specListeners} protectedHz={inf.fault && inf.fault !== 'normal' ? inf.protected_hz : undefined} />
+              <Spectrum hw={hw} listeners={specListeners} protectedHz={inf.fault && inf.fault !== 'normal' && inf.fault !== 'stopped' ? inf.protected_hz : undefined} />
               <div className="mt-6">
-                <Head n="03" right="cabin mic, live">Noise reduction</Head>
-                <NoiseMeter nr={nr} />
-                <EspAnc inf={inf} />
+                <Head n="03" right={hw ? 'error mic, live' : 'cabin mic, live'}>Noise reduction</Head>
+                <NoiseMeter nr={nr} hw={hw} />
+                <OnboardAnc tel={tel} inf={inf} />
               </div>
             </section>
           </main>

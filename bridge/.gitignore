@@ -5,3 +5,5 @@ models/
 *.wav
 *.png
 recordings/
+data_esp32s3/
+models_esp32s3/

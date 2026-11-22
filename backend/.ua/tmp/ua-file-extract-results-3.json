@@ -1,0 +1,670 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 5,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 5,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 5,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "app/analytics/health.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 67,
+      "nonEmptyLines": 55,
+      "functions": [
+        {
+          "name": "normalize_score",
+          "startLine": 5,
+          "endLine": 6,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "level_for_score",
+          "startLine": 9,
+          "endLine": 16,
+          "params": [
+            "score"
+          ]
+        },
+        {
+          "name": "health_message_for_score",
+          "startLine": 19,
+          "endLine": 27,
+          "params": [
+            "score"
+          ]
+        },
+        {
+          "name": "score_from_inference",
+          "startLine": 30,
+          "endLine": 37,
+          "params": [
+            "conf",
+            "vib_cancel_effort"
+          ]
+        },
+        {
+          "name": "explain_fault_bucket",
+          "startLine": 40,
+          "endLine": 49,
+          "params": [
+            "vid",
+            "fault",
+            "conf",
+            "vib_rms",
+            "rpm"
+          ]
+        },
+        {
+          "name": "time_to_severe",
+          "startLine": 52,
+          "endLine": 67,
+          "params": [
+            "history"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "normalize_score",
+          "line": 5,
+          "isDefault": false
+        },
+        {
+          "name": "level_for_score",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "health_message_for_score",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "score_from_inference",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "explain_fault_bucket",
+          "line": 40,
+          "isDefault": false
+        },
+        {
+          "name": "time_to_severe",
+          "line": 52,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "normalize_score",
+          "callee": "max",
+          "lineNumber": 6
+        },
+        {
+          "caller": "normalize_score",
+          "callee": "min",
+          "lineNumber": 6
+        },
+        {
+          "caller": "health_message_for_score",
+          "callee": "level_for_score",
+          "lineNumber": 20
+        },
+        {
+          "caller": "health_message_for_score",
+          "callee": "mapping.get",
+          "lineNumber": 27
+        },
+        {
+          "caller": "score_from_inference",
+          "callee": "conf.get",
+          "lineNumber": 31
+        },
+        {
+          "caller": "score_from_inference",
+          "callee": "conf.get",
+          "lineNumber": 32
+        },
+        {
+          "caller": "score_from_inference",
+          "callee": "conf.get",
+          "lineNumber": 33
+        },
+        {
+          "caller": "score_from_inference",
+          "callee": "normalize_score",
+          "lineNumber": 37
+        },
+        {
+          "caller": "explain_fault_bucket",
+          "callee": "max",
+          "lineNumber": 44
+        },
+        {
+          "caller": "time_to_severe",
+          "callee": "len",
+          "lineNumber": 53
+        },
+        {
+          "caller": "time_to_severe",
+          "callee": "len",
+          "lineNumber": 55
+        },
+        {
+          "caller": "time_to_severe",
+          "callee": "max",
+          "lineNumber": 57
+        },
+        {
+          "caller": "time_to_severe",
+          "callee": "min",
+          "lineNumber": 57
+        },
+        {
+          "caller": "time_to_severe",
+          "callee": "max",
+          "lineNumber": 61
+        },
+        {
+          "caller": "time_to_severe",
+          "callee": "len",
+          "lineNumber": 61
+        },
+        {
+          "caller": "time_to_severe",
+          "callee": "max",
+          "lineNumber": 64
+        },
+        {
+          "caller": "time_to_severe",
+          "callee": "abs",
+          "lineNumber": 64
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 6,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "app/ingest/event_bus.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 48,
+      "nonEmptyLines": 36,
+      "classes": [
+        {
+          "name": "EventBus",
+          "startLine": 7,
+          "endLine": 45,
+          "methods": [
+            "__init__",
+            "subscribe",
+            "unsubscribe",
+            "publish",
+            "publish_for_vehicle",
+            "mark_device",
+            "device_active",
+            "_safe_call"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "EventBus",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "defaultdict",
+          "lineNumber": 11
+        },
+        {
+          "caller": "subscribe",
+          "callee": "self._subscribers[key].append",
+          "lineNumber": 15
+        },
+        {
+          "caller": "unsubscribe",
+          "callee": "self._subscribers.get",
+          "lineNumber": 18
+        },
+        {
+          "caller": "unsubscribe",
+          "callee": "self._subscribers[key].remove",
+          "lineNumber": 19
+        },
+        {
+          "caller": "publish",
+          "callee": "event.get",
+          "lineNumber": 23
+        },
+        {
+          "caller": "publish",
+          "callee": "keys.append",
+          "lineNumber": 24
+        },
+        {
+          "caller": "publish",
+          "callee": "list",
+          "lineNumber": 26
+        },
+        {
+          "caller": "publish",
+          "callee": "self._subscribers.get",
+          "lineNumber": 26
+        },
+        {
+          "caller": "publish",
+          "callee": "self._safe_call",
+          "lineNumber": 27
+        },
+        {
+          "caller": "publish_for_vehicle",
+          "callee": "self.publish",
+          "lineNumber": 30
+        },
+        {
+          "caller": "mark_device",
+          "callee": "time.time",
+          "lineNumber": 34
+        },
+        {
+          "caller": "device_active",
+          "callee": "time.time",
+          "lineNumber": 37
+        },
+        {
+          "caller": "device_active",
+          "callee": "self._device_seen.get",
+          "lineNumber": 37
+        },
+        {
+          "caller": "_safe_call",
+          "callee": "callback",
+          "lineNumber": 41
+        },
+        {
+          "caller": "_safe_call",
+          "callee": "asyncio.iscoroutine",
+          "lineNumber": 42
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "app/ingest/websocket_device.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 41,
+      "nonEmptyLines": 34,
+      "functions": [
+        {
+          "name": "parse_frame",
+          "startLine": 12,
+          "endLine": 23,
+          "params": [
+            "text"
+          ]
+        },
+        {
+          "name": "websocket_device_endpoint",
+          "startLine": 26,
+          "endLine": 41,
+          "params": [
+            "websocket",
+            "vid"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "parse_frame",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "websocket_device_endpoint",
+          "line": 26,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "parse_frame",
+          "callee": "text.strip",
+          "lineNumber": 14
+        },
+        {
+          "caller": "parse_frame",
+          "callee": "json.loads",
+          "lineNumber": 17
+        },
+        {
+          "caller": "parse_frame",
+          "callee": "logger.warning",
+          "lineNumber": 19
+        },
+        {
+          "caller": "parse_frame",
+          "callee": "isinstance",
+          "lineNumber": 21
+        },
+        {
+          "caller": "websocket_device_endpoint",
+          "callee": "websocket.accept",
+          "lineNumber": 28
+        },
+        {
+          "caller": "websocket_device_endpoint",
+          "callee": "logger.info",
+          "lineNumber": 29
+        },
+        {
+          "caller": "websocket_device_endpoint",
+          "callee": "parse_frame",
+          "lineNumber": 32
+        },
+        {
+          "caller": "websocket_device_endpoint",
+          "callee": "websocket.receive_text",
+          "lineNumber": 32
+        },
+        {
+          "caller": "websocket_device_endpoint",
+          "callee": "payload.setdefault",
+          "lineNumber": 35
+        },
+        {
+          "caller": "websocket_device_endpoint",
+          "callee": "bus.mark_device",
+          "lineNumber": 36
+        },
+        {
+          "caller": "websocket_device_endpoint",
+          "callee": "bus.publish",
+          "lineNumber": 37
+        },
+        {
+          "caller": "websocket_device_endpoint",
+          "callee": "process_frame",
+          "lineNumber": 37
+        },
+        {
+          "caller": "websocket_device_endpoint",
+          "callee": "logger.info",
+          "lineNumber": 39
+        },
+        {
+          "caller": "websocket_device_endpoint",
+          "callee": "logger.warning",
+          "lineNumber": 41
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "app/routers/websocket.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 56,
+      "nonEmptyLines": 46,
+      "functions": [
+        {
+          "name": "live_stream",
+          "startLine": 15,
+          "endLine": 32,
+          "params": [
+            "websocket",
+            "vid"
+          ]
+        },
+        {
+          "name": "device_stream",
+          "startLine": 36,
+          "endLine": 37,
+          "params": [
+            "websocket",
+            "vid"
+          ]
+        },
+        {
+          "name": "fleet_stream",
+          "startLine": 41,
+          "endLine": 56,
+          "params": [
+            "websocket"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "live_stream",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "device_stream",
+          "line": 35,
+          "isDefault": false
+        },
+        {
+          "name": "fleet_stream",
+          "line": 40,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "live_stream",
+          "callee": "websocket.accept",
+          "lineNumber": 16
+        },
+        {
+          "caller": "forward",
+          "callee": "event.get",
+          "lineNumber": 18
+        },
+        {
+          "caller": "forward",
+          "callee": "websocket.send_text",
+          "lineNumber": 21
+        },
+        {
+          "caller": "forward",
+          "callee": "json.dumps",
+          "lineNumber": 21
+        },
+        {
+          "caller": "live_stream",
+          "callee": "bus.subscribe",
+          "lineNumber": 25
+        },
+        {
+          "caller": "live_stream",
+          "callee": "websocket.receive_text",
+          "lineNumber": 28
+        },
+        {
+          "caller": "live_stream",
+          "callee": "bus.unsubscribe",
+          "lineNumber": 32
+        },
+        {
+          "caller": "device_stream",
+          "callee": "websocket_device_endpoint",
+          "lineNumber": 37
+        },
+        {
+          "caller": "fleet_stream",
+          "callee": "websocket.accept",
+          "lineNumber": 42
+        },
+        {
+          "caller": "fleet_stream",
+          "callee": "websocket.send_text",
+          "lineNumber": 45
+        },
+        {
+          "caller": "fleet_stream",
+          "callee": "json.dumps",
+          "lineNumber": 45
+        },
+        {
+          "caller": "fleet_stream",
+          "callee": "datetime.utcnow().isoformat",
+          "lineNumber": 46
+        },
+        {
+          "caller": "fleet_stream",
+          "callee": "datetime.utcnow",
+          "lineNumber": 46
+        },
+        {
+          "caller": "fleet_stream",
+          "callee": "asyncio.sleep",
+          "lineNumber": 54
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "tests/test_health.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 24,
+      "nonEmptyLines": 16,
+      "functions": [
+        {
+          "name": "test_score_from_inference_is_clamped",
+          "startLine": 4,
+          "endLine": 6,
+          "params": []
+        },
+        {
+          "name": "test_level_mapping_is_correct",
+          "startLine": 9,
+          "endLine": 13,
+          "params": []
+        },
+        {
+          "name": "test_health_message_mapping",
+          "startLine": 16,
+          "endLine": 18,
+          "params": []
+        },
+        {
+          "name": "test_time_to_severe_returns_estimate_for_declining_trend",
+          "startLine": 21,
+          "endLine": 24,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "test_score_from_inference_is_clamped",
+          "line": 4,
+          "isDefault": false
+        },
+        {
+          "name": "test_level_mapping_is_correct",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "test_health_message_mapping",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "test_time_to_severe_returns_estimate_for_declining_trend",
+          "line": 21,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "test_score_from_inference_is_clamped",
+          "callee": "score_from_inference",
+          "lineNumber": 5
+        },
+        {
+          "caller": "test_level_mapping_is_correct",
+          "callee": "level_for_score",
+          "lineNumber": 10
+        },
+        {
+          "caller": "test_level_mapping_is_correct",
+          "callee": "level_for_score",
+          "lineNumber": 11
+        },
+        {
+          "caller": "test_level_mapping_is_correct",
+          "callee": "level_for_score",
+          "lineNumber": 12
+        },
+        {
+          "caller": "test_level_mapping_is_correct",
+          "callee": "level_for_score",
+          "lineNumber": 13
+        },
+        {
+          "caller": "test_health_message_mapping",
+          "callee": "health_message_for_score",
+          "lineNumber": 17
+        },
+        {
+          "caller": "test_health_message_mapping",
+          "callee": "health_message_for_score",
+          "lineNumber": 18
+        },
+        {
+          "caller": "test_time_to_severe_returns_estimate_for_declining_trend",
+          "callee": "time_to_severe",
+          "lineNumber": 22
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    }
+  ]
+}

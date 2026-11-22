@@ -1,0 +1,684 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 5,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 5,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 5,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "app/analytics/advice.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 83,
+      "nonEmptyLines": 71,
+      "functions": [
+        {
+          "name": "_ok",
+          "startLine": 34,
+          "endLine": 35,
+          "params": [
+            "v"
+          ]
+        },
+        {
+          "name": "compute_points",
+          "startLine": 38,
+          "endLine": 45,
+          "params": [
+            "fault",
+            "level",
+            "conf",
+            "db_over"
+          ]
+        },
+        {
+          "name": "tier_for_points",
+          "startLine": 48,
+          "endLine": 52,
+          "params": [
+            "points"
+          ]
+        },
+        {
+          "name": "assess",
+          "startLine": 55,
+          "endLine": 83,
+          "params": [
+            "fault",
+            "level",
+            "conf",
+            "db_over",
+            "fix_db",
+            "fix_vib_pct"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "_ok",
+          "line": 34,
+          "isDefault": false
+        },
+        {
+          "name": "compute_points",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "tier_for_points",
+          "line": 48,
+          "isDefault": false
+        },
+        {
+          "name": "assess",
+          "line": 55,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "compute_points",
+          "callee": "max",
+          "lineNumber": 39
+        },
+        {
+          "caller": "compute_points",
+          "callee": "min",
+          "lineNumber": 39
+        },
+        {
+          "caller": "compute_points",
+          "callee": "min",
+          "lineNumber": 40
+        },
+        {
+          "caller": "compute_points",
+          "callee": "max",
+          "lineNumber": 40
+        },
+        {
+          "caller": "compute_points",
+          "callee": "_ok",
+          "lineNumber": 41
+        },
+        {
+          "caller": "compute_points",
+          "callee": "conf.get",
+          "lineNumber": 41
+        },
+        {
+          "caller": "compute_points",
+          "callee": "_ok",
+          "lineNumber": 41
+        },
+        {
+          "caller": "compute_points",
+          "callee": "conf.get",
+          "lineNumber": 41
+        },
+        {
+          "caller": "compute_points",
+          "callee": "max",
+          "lineNumber": 44
+        },
+        {
+          "caller": "compute_points",
+          "callee": "max",
+          "lineNumber": 45
+        },
+        {
+          "caller": "compute_points",
+          "callee": "min",
+          "lineNumber": 45
+        },
+        {
+          "caller": "assess",
+          "callee": "round",
+          "lineNumber": 61
+        },
+        {
+          "caller": "assess",
+          "callee": "compute_points",
+          "lineNumber": 61
+        },
+        {
+          "caller": "assess",
+          "callee": "tier_for_points",
+          "lineNumber": 62
+        },
+        {
+          "caller": "assess",
+          "callee": "DIY_TIPS.get",
+          "lineNumber": 63
+        },
+        {
+          "caller": "assess",
+          "callee": "tip[0].upper",
+          "lineNumber": 65
+        },
+        {
+          "caller": "assess",
+          "callee": "REASONS.get",
+          "lineNumber": 73
+        },
+        {
+          "caller": "assess",
+          "callee": "dict",
+          "lineNumber": 77
+        },
+        {
+          "caller": "assess",
+          "callee": "_ok",
+          "lineNumber": 78
+        },
+        {
+          "caller": "assess",
+          "callee": "conf.get",
+          "lineNumber": 78
+        },
+        {
+          "caller": "assess",
+          "callee": "_ok",
+          "lineNumber": 78
+        },
+        {
+          "caller": "assess",
+          "callee": "conf.get",
+          "lineNumber": 78
+        },
+        {
+          "caller": "assess",
+          "callee": "round",
+          "lineNumber": 80
+        },
+        {
+          "caller": "assess",
+          "callee": "round",
+          "lineNumber": 82
+        },
+        {
+          "caller": "assess",
+          "callee": "min",
+          "lineNumber": 82
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "app/ingest/processing.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 39,
+      "nonEmptyLines": 32,
+      "functions": [
+        {
+          "name": "process_frame",
+          "startLine": 13,
+          "endLine": 23,
+          "params": [
+            "payload"
+          ]
+        },
+        {
+          "name": "advise",
+          "startLine": 26,
+          "endLine": 39,
+          "params": [
+            "st",
+            "inf"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "process_frame",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "advise",
+          "line": 26,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "process_frame",
+          "callee": "payload.get",
+          "lineNumber": 14
+        },
+        {
+          "caller": "process_frame",
+          "callee": "payload.get",
+          "lineNumber": 16
+        },
+        {
+          "caller": "process_frame",
+          "callee": "isinstance",
+          "lineNumber": 17
+        },
+        {
+          "caller": "process_frame",
+          "callee": "payload.get",
+          "lineNumber": 17
+        },
+        {
+          "caller": "process_frame",
+          "callee": "float",
+          "lineNumber": 18
+        },
+        {
+          "caller": "process_frame",
+          "callee": "isinstance",
+          "lineNumber": 19
+        },
+        {
+          "caller": "process_frame",
+          "callee": "payload.get",
+          "lineNumber": 19
+        },
+        {
+          "caller": "process_frame",
+          "callee": "float",
+          "lineNumber": 20
+        },
+        {
+          "caller": "process_frame",
+          "callee": "advise",
+          "lineNumber": 22
+        },
+        {
+          "caller": "advise",
+          "callee": "inf.get",
+          "lineNumber": 27
+        },
+        {
+          "caller": "advise",
+          "callee": "min",
+          "lineNumber": 30
+        },
+        {
+          "caller": "advise",
+          "callee": "min",
+          "lineNumber": 35
+        },
+        {
+          "caller": "advise",
+          "callee": "float",
+          "lineNumber": 38
+        },
+        {
+          "caller": "advise",
+          "callee": "inf.get",
+          "lineNumber": 38
+        },
+        {
+          "caller": "advise",
+          "callee": "assess",
+          "lineNumber": 39
+        },
+        {
+          "caller": "advise",
+          "callee": "inf.get",
+          "lineNumber": 39
+        },
+        {
+          "caller": "advise",
+          "callee": "max",
+          "lineNumber": 39
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "app/ingest/serial_reader.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 55,
+      "nonEmptyLines": 47,
+      "classes": [
+        {
+          "name": "SerialReader",
+          "startLine": 14,
+          "endLine": 55,
+          "methods": [
+            "__init__",
+            "start",
+            "_listen",
+            "_parse_line"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "SerialReader",
+          "line": 14,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "start",
+          "callee": "self._task.done",
+          "lineNumber": 22
+        },
+        {
+          "caller": "start",
+          "callee": "asyncio.create_task",
+          "lineNumber": 24
+        },
+        {
+          "caller": "start",
+          "callee": "self._listen",
+          "lineNumber": 24
+        },
+        {
+          "caller": "_listen",
+          "callee": "serial.Serial",
+          "lineNumber": 30
+        },
+        {
+          "caller": "_listen",
+          "callee": "logger.info",
+          "lineNumber": 31
+        },
+        {
+          "caller": "_listen",
+          "callee": "self._connection.readline",
+          "lineNumber": 33
+        },
+        {
+          "caller": "_listen",
+          "callee": "self._parse_line",
+          "lineNumber": 36
+        },
+        {
+          "caller": "_listen",
+          "callee": "line.decode(\"utf-8\", errors=\"ignore\").strip",
+          "lineNumber": 36
+        },
+        {
+          "caller": "_listen",
+          "callee": "line.decode",
+          "lineNumber": 36
+        },
+        {
+          "caller": "_listen",
+          "callee": "parsed.get",
+          "lineNumber": 38
+        },
+        {
+          "caller": "_listen",
+          "callee": "bus.mark_device",
+          "lineNumber": 39
+        },
+        {
+          "caller": "_listen",
+          "callee": "bus.publish",
+          "lineNumber": 40
+        },
+        {
+          "caller": "_listen",
+          "callee": "process_frame",
+          "lineNumber": 40
+        },
+        {
+          "caller": "_listen",
+          "callee": "logger.warning",
+          "lineNumber": 42
+        },
+        {
+          "caller": "_listen",
+          "callee": "asyncio.sleep",
+          "lineNumber": 43
+        },
+        {
+          "caller": "_parse_line",
+          "callee": "json.loads",
+          "lineNumber": 49
+        },
+        {
+          "caller": "_parse_line",
+          "callee": "isinstance",
+          "lineNumber": 50
+        },
+        {
+          "caller": "_parse_line",
+          "callee": "logger.warning",
+          "lineNumber": 54
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "tests/test_advice.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 37,
+      "nonEmptyLines": 28,
+      "functions": [
+        {
+          "name": "test_healthy_is_zero_points",
+          "startLine": 7,
+          "endLine": 9,
+          "params": []
+        },
+        {
+          "name": "test_points_formula",
+          "startLine": 12,
+          "endLine": 16,
+          "params": []
+        },
+        {
+          "name": "test_tiers_and_advice",
+          "startLine": 19,
+          "endLine": 25,
+          "params": []
+        },
+        {
+          "name": "test_backend_enriches_esp32_inf_but_keeps_bridge_fields",
+          "startLine": 28,
+          "endLine": 37,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "test_healthy_is_zero_points",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "test_points_formula",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "test_tiers_and_advice",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "test_backend_enriches_esp32_inf_but_keeps_bridge_fields",
+          "line": 28,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "test_healthy_is_zero_points",
+          "callee": "assess",
+          "lineNumber": 8
+        },
+        {
+          "caller": "test_points_formula",
+          "callee": "compute_points",
+          "lineNumber": 13
+        },
+        {
+          "caller": "test_points_formula",
+          "callee": "compute_points",
+          "lineNumber": 14
+        },
+        {
+          "caller": "test_points_formula",
+          "callee": "compute_points",
+          "lineNumber": 15
+        },
+        {
+          "caller": "test_points_formula",
+          "callee": "compute_points",
+          "lineNumber": 16
+        },
+        {
+          "caller": "test_tiers_and_advice",
+          "callee": "assess",
+          "lineNumber": 20
+        },
+        {
+          "caller": "test_tiers_and_advice",
+          "callee": "assess",
+          "lineNumber": 22
+        },
+        {
+          "caller": "test_tiers_and_advice",
+          "callee": "assess",
+          "lineNumber": 24
+        },
+        {
+          "caller": "test_backend_enriches_esp32_inf_but_keeps_bridge_fields",
+          "callee": "process_frame",
+          "lineNumber": 30
+        },
+        {
+          "caller": "test_backend_enriches_esp32_inf_but_keeps_bridge_fields",
+          "callee": "process_frame",
+          "lineNumber": 31
+        },
+        {
+          "caller": "test_backend_enriches_esp32_inf_but_keeps_bridge_fields",
+          "callee": "process_frame",
+          "lineNumber": 33
+        },
+        {
+          "caller": "test_backend_enriches_esp32_inf_but_keeps_bridge_fields",
+          "callee": "process_frame",
+          "lineNumber": 34
+        },
+        {
+          "caller": "test_backend_enriches_esp32_inf_but_keeps_bridge_fields",
+          "callee": "round",
+          "lineNumber": 35
+        },
+        {
+          "caller": "test_backend_enriches_esp32_inf_but_keeps_bridge_fields",
+          "callee": "process_frame",
+          "lineNumber": 36
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "tests/test_parser.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 32,
+      "nonEmptyLines": 27,
+      "functions": [
+        {
+          "name": "test_parser_accepts_valid_json_line",
+          "startLine": 6,
+          "endLine": 26,
+          "params": []
+        },
+        {
+          "name": "test_parser_ignores_malformed_lines",
+          "startLine": 29,
+          "endLine": 32,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "test_parser_accepts_valid_json_line",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "test_parser_ignores_malformed_lines",
+          "line": 29,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "test_parser_accepts_valid_json_line",
+          "callee": "SerialReader",
+          "lineNumber": 7
+        },
+        {
+          "caller": "test_parser_accepts_valid_json_line",
+          "callee": "parser._parse_line",
+          "lineNumber": 25
+        },
+        {
+          "caller": "test_parser_accepts_valid_json_line",
+          "callee": "json.dumps",
+          "lineNumber": 25
+        },
+        {
+          "caller": "test_parser_ignores_malformed_lines",
+          "callee": "SerialReader",
+          "lineNumber": 30
+        },
+        {
+          "caller": "test_parser_ignores_malformed_lines",
+          "callee": "parser._parse_line",
+          "lineNumber": 31
+        },
+        {
+          "caller": "test_parser_ignores_malformed_lines",
+          "callee": "parser._parse_line",
+          "lineNumber": 32
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    }
+  ]
+}

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.ingest import hardware
 from app.models import Vehicle
 from app.schemas import BaselineRequest, VehicleCommand
 from app.storage.crud import create_vehicle_if_missing, get_vehicle, list_vehicles
@@ -30,7 +31,9 @@ def send_vehicle_command(vid: str, payload: VehicleCommand, db: Session = Depend
     vehicle = get_vehicle(db, vid)
     if not vehicle:
         vehicle = create_vehicle_if_missing(db, vid)
-    return {"ok": True, "vid": vid, "command": payload.model_dump(exclude_none=True), "vehicle_id": vehicle.id}
+    cmd = payload.model_dump(exclude_none=True)
+    sent = bool(cmd) and hardware.link is not None and hardware.link.send({"cmd": "set", **cmd})
+    return {"ok": True, "vid": vid, "command": cmd, "vehicle_id": vehicle.id, "sent_to_device": sent}
 
 
 @router.post("/vehicles/{vid}/baseline")
